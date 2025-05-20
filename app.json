@@ -12,8 +12,22 @@
     },
     "android": {
       "package": "com.jgy36.politicalapp",
-      "newArchEnabled": false
-    }
+      "newArchEnabled": false,
+      "permissions": ["INTERNET", "ACCESS_NETWORK_STATE"],
+      "config": {
+        "usesCleartextTraffic": true
+      }
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ]
   },
   "extra": {
     "eas": {

@@ -18,9 +18,12 @@ export const injectStore = (store: any) => {
 
 import { Platform } from 'react-native';
 
+// Temporarily hardcode for testing - place this in apiClient.ts
 const devHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
-export const API_BASE_URL = Config.API_BASE_URL || `http://${devHost}:8080/api`;
-export const BASE_URL = Config.BASE_URL || `http://${devHost}:8080`;
+export const API_BASE_URL = `http://${devHost}:8080/api`;  
+export const BASE_URL = `http://${devHost}:8080`;
+
+console.log('API_BASE_URL is configured as:', API_BASE_URL);
 
 // Interface for token refresh (unchanged)
 export interface TokenRefreshResponse {
@@ -72,18 +75,29 @@ const processQueue = (error: Error | null, value: unknown = null) => {
  * Validate authentication state - React Native version
  * @returns {boolean} Whether authentication is valid
  */
+// Add this to validateAuthState or other key API functions
 export const validateAuthState = async (): Promise<boolean> => {
-  const token = await getToken(); // Now async
-  const isAuthInRedux = storeInstance?.getState()?.user?.isAuthenticated;
-
-  // Log mismatch for debugging
-  if (isAuthInRedux && !token) {
-    console.warn(
-      "Authentication state mismatch: Redux shows authenticated but token is missing"
-    );
+  try {
+    console.log('Validating auth with URL:', API_BASE_URL);
+    const token = await getToken();
+    console.log('Token exists:', !!token);
+    
+    if (!token) return false;
+    
+    console.log('Making request to:', `${API_BASE_URL}/users/me`);
+    const response = await apiClient.get('/users/me');
+    console.log('Auth check successful!');
+    return true;
+  } catch (error: any) {
+    console.error('Auth check failed with details:', {
+      message: error.message,
+      code: error.code,
+      config: error.config?.url,
+      response: error.response?.status,
+      responseData: error.response?.data,
+    });
+    return false;
   }
-
-  return !!token;
 };
 
 /**

@@ -1,6 +1,6 @@
 // src/screens/LandingScreen.tsx
 import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, StatusBar, SafeAreaView } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar, SafeAreaView, StyleSheet } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
@@ -40,36 +40,36 @@ const LandingScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
       
-      <View className="flex-1 px-6 justify-center">
+      <View style={styles.content}>
         {/* Logo Section */}
-        <View className="items-center mb-12">
-          <View className="w-24 h-24 bg-blue-600 rounded-full items-center justify-center mb-6 shadow-lg">
+        <View style={styles.logoSection}>
+          <View style={styles.logoCircle}>
             <MaterialIcons name="how-to-vote" size={48} color="white" />
           </View>
           
-          <Text className="text-4xl font-bold text-gray-800 text-center mb-2">
+          <Text style={styles.title}>
             Join Today
           </Text>
-          <Text className="text-lg text-gray-600 text-center leading-relaxed">
+          <Text style={styles.subtitle}>
             Connect with your political community
           </Text>
         </View>
 
         {/* Buttons Section */}
-        <View className="space-y-4">
+        <View style={styles.buttonsContainer}>
           {/* Google Sign Up Button */}
           <TouchableOpacity
             onPress={handleGoogleSignIn}
             disabled={!request}
-            className="w-full flex-row items-center justify-center bg-white border border-gray-300 px-6 py-4 rounded-lg shadow-sm active:bg-gray-50"
+            style={styles.googleButton}
           >
-            <View className="w-5 h-5 bg-red-500 rounded-full mr-3 items-center justify-center">
-              <Text className="text-white text-xs font-bold">G</Text>
+            <View style={styles.googleIcon}>
+              <Text style={styles.googleIconText}>G</Text>
             </View>
-            <Text className="text-gray-800 font-semibold text-base">
+            <Text style={styles.googleButtonText}>
               Sign Up with Google
             </Text>
           </TouchableOpacity>
@@ -77,9 +77,9 @@ const LandingScreen = () => {
           {/* Create Account Button */}
           <TouchableOpacity
             onPress={() => (navigation as any).navigate('Register')}
-            className="w-full bg-blue-600 px-6 py-4 rounded-lg items-center shadow-sm active:bg-blue-700"
+            style={styles.createAccountButton}
           >
-            <Text className="text-white font-semibold text-base">
+            <Text style={styles.buttonText}>
               Create Account
             </Text>
           </TouchableOpacity>
@@ -87,24 +87,151 @@ const LandingScreen = () => {
           {/* Sign In Button */}
           <TouchableOpacity
             onPress={() => (navigation as any).navigate('Login')}
-            className="w-full bg-gray-600 px-6 py-4 rounded-lg items-center shadow-sm active:bg-gray-700"
+            style={styles.signInButton}
           >
-            <Text className="text-white font-semibold text-base">
+            <Text style={styles.buttonText}>
               Sign In
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Terms and Privacy */}
-        <Text className="text-xs text-gray-500 text-center mt-8 px-4 leading-relaxed">
+        <Text style={styles.termsText}>
           By signing up, you agree to our{' '}
-          <Text className="text-blue-600">Terms of Service</Text>
+          <Text style={styles.linkText}>Terms of Service</Text>
           {' '}and{' '}
-          <Text className="text-blue-600">Privacy Policy</Text>
+          <Text style={styles.linkText}>Privacy Policy</Text>
         </Text>
       </View>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f3f4f6',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 48,
+  },
+  logoCircle: {
+    width: 96,
+    height: 96,
+    backgroundColor: '#2563eb',
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#4b5563',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  buttonsContainer: {
+    marginBottom: 16,
+  },
+  googleButton: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#ef4444',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  googleIconText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  googleButtonText: {
+    color: '#1f2937',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  createAccountButton: {
+    width: '100%',
+    backgroundColor: '#2563eb',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  signInButton: {
+    width: '100%',
+    backgroundColor: '#4b5563',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  termsText: {
+    fontSize: 12,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginTop: 32,
+    paddingHorizontal: 16,
+    lineHeight: 18,
+  },
+  linkText: {
+    color: '#2563eb',
+  },
+});
 
 export default LandingScreen;
