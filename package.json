@@ -1,6 +1,7 @@
 {
-  "name": "PoliticalApp",
+  "name": "political-app",
   "version": "0.0.1",
+  "main": "./App.tsx",
   "private": true,
   "scripts": {
     "start": "expo start",

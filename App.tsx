@@ -1,7 +1,7 @@
 // App.tsx - Full navigation with bottom tabs with advanced debugging
 import "./global.css";
 import { injectStore } from "./src/api/apiClient";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { NavigationContainer } from "@react-navigation/native";
@@ -13,7 +13,7 @@ import { LogBox, View, Text, ActivityIndicator, Button } from "react-native";
 import { store, persistor } from "./src/redux/store";
 
 // Hide known warnings
-LogBox.ignoreLogs(["Require cycle:", "[expo-av]"]);
+LogBox.ignoreLogs(["Require cycle:", "[expo-av]", "ImmutableStateInvariantMiddleware"]);
 
 // Initialize apiClient with store
 injectStore(store);
@@ -141,14 +141,12 @@ function MainTabNavigator() {
   );
 }
 
+// Simplified AuthPersistence component for debugging
 function AuthPersistence({ children }: { children: React.ReactNode }) {
   console.log("Rendering AuthPersistence");
   const dispatch = useDispatch<AppDispatch>();
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.user.isAuthenticated
-  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("AuthPersistence useEffect running");
@@ -160,6 +158,7 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
         await dispatch(restoreAuthState()).unwrap();
         console.log("Auth state restored successfully", {
           isAuthenticated: store.getState().user.isAuthenticated,
+          reduxState: JSON.stringify(store.getState().user).substring(0, 100) + "..."
         });
 
         // Initialize badges if authenticated
@@ -168,7 +167,9 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
           dispatch(initializeBadges());
         }
       } catch (error) {
-        console.error("Error initializing app:", error);
+        console.error("Error initializing app:", 
+                    error instanceof Error ? error.message : "Unknown error",
+                    error);
         setError(
           error instanceof Error
             ? error.message
@@ -247,9 +248,6 @@ function AppNavigator() {
     return state.user.isAuthenticated;
   });
 
-  // Force showing login for debugging if needed
-  // const isAuthenticated = false;
-
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -309,17 +307,48 @@ function AppNavigator() {
   );
 }
 
-// Main App component with error handling
+// Main App component with error handling and emergency debug render
 export default function App() {
   console.log("App component initializing...");
   const [hasError, setHasError] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
+  const [debugMode, setDebugMode] = React.useState(true); // Set to true for emergency debugging
 
-  // ADD YOUR TEST CODE HERE - inside the component
+  // EMERGENCY DEBUGGING
+  if (debugMode) {
+    console.log("Rendering emergency debug screen");
+    return (
+      <View style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white'
+      }}>
+        <Text style={{ fontSize: 20, marginBottom: 20 }}>EMERGENCY DEBUG SCREEN</Text>
+        <Text style={{ marginBottom: 10 }}>App is rendering but Redux might be broken</Text>
+        <Button 
+          title="Try Full App" 
+          onPress={() => setDebugMode(false)} 
+        />
+        
+        <View style={{
+          position: 'absolute',
+          top: 50,
+          right: 20,
+          backgroundColor: 'blue',
+          padding: 10,
+          borderRadius: 5
+        }}>
+          <Text style={{ color: 'white' }}>Debug Indicator</Text>
+        </View>
+      </View>
+    );
+  }
+
   useEffect(() => {
     console.log("App component mounted");
 
-    // Connection test code
+    // Connection test code with improved logging
     console.log("Testing direct connection to backend...");
     fetch("http://10.0.2.2:8080/api/auth/check-username", {
       method: "POST",
@@ -334,14 +363,10 @@ export default function App() {
       })
       .then((text) => console.log("Response:", text))
       .catch((error) => {
-        console.error("Connection test failed:", error);
+        console.error("Connection test failed:", error.message, 
+                  "Make sure your backend server is running at http://localhost:8080");
       });
 
-    return () => console.log("App component unmounted");
-  }, []);
-
-  useEffect(() => {
-    console.log("App component mounted");
     return () => console.log("App component unmounted");
   }, []);
 
@@ -367,7 +392,10 @@ export default function App() {
             </View>
           }
           persistor={persistor}
-          onBeforeLift={() => console.log("PersistGate: Before lift")}
+          onBeforeLift={() => {
+            console.log("PersistGate: Before lift");
+            console.log("Initial Redux State:", JSON.stringify(store.getState().user).substring(0, 100) + "...");
+          }}
         >
           <StatusBar style="auto" />
           <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -383,6 +411,7 @@ export default function App() {
     setError(err instanceof Error ? err : new Error("Unknown render error"));
     setHasError(true);
 
+    // Fallback render if everything fails
     return (
       <View
         style={{
@@ -394,6 +423,12 @@ export default function App() {
       >
         <Text style={{ color: "red", fontSize: 18 }}>App loading error!</Text>
         <Text>{err instanceof Error ? err.message : "Unknown error"}</Text>
+        <Text>Check console logs for details</Text>
+        <Button 
+          title="Try Emergency Mode" 
+          onPress={() => setDebugMode(true)} 
+          color="green"
+        />
       </View>
     );
   }

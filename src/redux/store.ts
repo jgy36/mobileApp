@@ -1,6 +1,6 @@
 // src/redux/store.ts - React Native with redux-persist
 import { configureStore } from "@reduxjs/toolkit";
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistStore, persistReducer, createTransform } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import userReducer from "./slices/userSlice";
 import postReducer from "./slices/postSlice";
@@ -9,35 +9,57 @@ import notificationPreferencesReducer from "./slices/notificationPreferencesSlic
 import privacySettingsReducer from "./slices/privacySettingsSlice";
 import badgeReducer from "./slices/badgeSlice";
 
+// Debug transform to log data being persisted
+const DebugTransform = createTransform(
+  // transform state on its way to being serialized and persisted
+  (inboundState, key) => {
+    console.log(`Redux-Persist: Saving state for ${key}`, 
+                JSON.stringify(inboundState).substring(0, 50) + "...");
+    return inboundState;
+  },
+  // transform state being rehydrated
+  (outboundState, key) => {
+    console.log(`Redux-Persist: Loaded state for ${key}`, 
+                JSON.stringify(outboundState).substring(0, 50) + "...");
+    return outboundState;
+  }
+);
+
 // Configure persistence for each reducer
 const userPersistConfig = {
   key: 'user',
   storage: AsyncStorage,
-  whitelist: ['id', 'username', 'email', 'displayName', 'bio', 'profileImageUrl', 'isAuthenticated', 'role']
+  whitelist: ['id', 'username', 'email', 'displayName', 'bio', 'profileImageUrl', 'isAuthenticated', 'role'],
+  transforms: [DebugTransform], // Add debug transform
+  debug: true, // Enable debug logging
 };
 
 const communitiesPersistConfig = {
   key: 'communities',
   storage: AsyncStorage,
-  whitelist: ['joinedCommunities', 'featuredCommunities', 'isSidebarOpen']
+  whitelist: ['joinedCommunities', 'featuredCommunities', 'isSidebarOpen'],
+  debug: true,
 };
 
 const notificationsPersistConfig = {
   key: 'notificationPreferences',
   storage: AsyncStorage,
-  whitelist: ['preferences', 'communityPreferences']
+  whitelist: ['preferences', 'communityPreferences'],
+  debug: true,
 };
 
 const privacyPersistConfig = {
   key: 'privacySettings',
   storage: AsyncStorage,
-  whitelist: ['settings']
+  whitelist: ['settings'],
+  debug: true,
 };
 
 const badgesPersistConfig = {
   key: 'badges',
   storage: AsyncStorage,
-  whitelist: ['badges', 'initialized']
+  whitelist: ['badges', 'initialized'],
+  debug: true,
 };
 
 // Create persisted reducers
@@ -46,6 +68,9 @@ const persistedCommunityReducer = persistReducer(communitiesPersistConfig, commu
 const persistedNotificationsReducer = persistReducer(notificationsPersistConfig, notificationPreferencesReducer);
 const persistedPrivacyReducer = persistReducer(privacyPersistConfig, privacySettingsReducer);
 const persistedBadgeReducer = persistReducer(badgesPersistConfig, badgeReducer);
+
+// Log when store is being configured
+console.log("Configuring Redux store...");
 
 export const store = configureStore({
   reducer: {
@@ -58,20 +83,26 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: [
-          'persist/PERSIST',
-          'persist/REHYDRATE',
-          'persist/PAUSE', 
-          'persist/PURGE',
-          'persist/REGISTER',
-          'persist/FLUSH'
-        ],
+      // TEMPORARILY DISABLE these checks for debugging
+      serializableCheck: false,
+      immutableCheck: false,
+      thunk: {
+        extraArgument: undefined,
       },
     }),
+  devTools: process.env.NODE_ENV !== 'production',
 });
 
-export const persistor = persistStore(store);
+console.log("Store configuration complete, initializing persistor...");
+
+export const persistor = persistStore(store, null, () => {
+  console.log("Redux store has been persisted and rehydrated");
+  console.log("Current store state:", 
+              JSON.stringify(store.getState().user).substring(0, 100) + "...");
+});
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+// Log once everything is set up
+console.log("Redux setup complete");

@@ -4,18 +4,19 @@
     "strict": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     },
     "moduleResolution": "bundler"
   },
   "include": [
-    "src/**/*",
+    "App.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     "global.css",
     "nativewind-env.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/app/**/*" // Temporarily exclude the app directory if you're using React Navigation
   ]
 }

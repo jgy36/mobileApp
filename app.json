@@ -1,5 +1,8 @@
 {
   "expo": {
+    "router": {
+      "enabled": false
+    },
     "ios": {
       "bundleIdentifier": "com.jgy36.politicalapp",
       "infoPlist": {
