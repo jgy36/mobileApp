@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 // src/screens/community/CreateCommunityScreen.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Alert, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
+import { useNavigation } from '@react-navigation/native';
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
+// Add imports for the missing icons
+import { Ionicons } from '@expo/vector-icons';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
 
@@ -30,6 +32,7 @@ type ValidationErrors = {
 };
 
 const CreateCommunityScreen = () => {
+  const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.user);
   const isAuthenticated = !!user.token;
   const isAdmin = user.role === "ADMIN";
@@ -47,14 +50,14 @@ const CreateCommunityScreen = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       Alert.alert("Authentication Required", "Please login to continue", [
-        { text: "OK", onPress: () => router.push("/login") }
+        { text: "OK", onPress: () => navigation.navigate('Login') }
       ]);
       return;
     }
     
     if (!isAdmin) {
       Alert.alert("Permission Denied", "Only administrators can create communities", [
-        { text: "OK", onPress: () => router.push("/community") }
+        { text: "OK", onPress: () => navigation.navigate('Communities') }
       ]);
       return;
     }
@@ -134,7 +137,7 @@ const CreateCommunityScreen = () => {
       Alert.alert("Success!", "Your community has been created");
       
       // Redirect to the new community
-      router.push(`/community/${response.data.id}`);
+      navigation.navigate('CommunityDetail', { id: response.data.id });
     } catch (error) {
       console.error("Error creating community:", error);
 
@@ -261,7 +264,7 @@ const CreateCommunityScreen = () => {
             {/* Information note */}
             <View className="rounded-lg border border-border p-4">
               <View className="flex-row">
-                <Info className="h-5 w-5 text-muted-foreground mr-2" />
+                <Ionicons name="information-circle-outline" size={20} style={{ marginRight: 8 }} color="#666" />
                 <Text className="text-sm text-muted-foreground flex-1">
                   By creating a community, you agree to moderate it according to platform guidelines. 
                   You'll automatically become its first member and moderator.
@@ -273,7 +276,7 @@ const CreateCommunityScreen = () => {
           <CardFooter className="flex-row justify-between">
             <Button
               variant="outline"
-              onPress={() => router.push("/community")}
+              onPress={() => navigation.navigate('Communities')}
               disabled={isCreating}
             >
               <Text>Cancel</Text>
@@ -286,7 +289,7 @@ const CreateCommunityScreen = () => {
                 </View>
               ) : (
                 <View className="flex-row items-center">
-                  <Users className="mr-2 h-4 w-4" />
+                  <Ionicons name="people" size={16} style={{ marginRight: 8 }} />
                   <Text>Create Community</Text>
                 </View>
               )}

@@ -1,7 +1,7 @@
 // src/components/community/CommunityCard.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -18,10 +18,10 @@ interface CommunityCardProps {
 }
 
 const CommunityCard: React.FC<CommunityCardProps> = ({ community, onJoin }) => {
-  const router = useRouter();
+  const navigation = useNavigation();
 
   const handleNavigate = () => {
-    router.push(`/community/${community.id}`);
+    navigation.push(`/community/${community.id}`);
   };
 
   return (

@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity, Text, View } from 'react-native';
 
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { getPreviousUrlInTab } from '@/utils/routerHistoryManager';
@@ -16,7 +16,7 @@ const BackButton = ({
   fallbackUrl = '/community',
   className = '',
 }: BackButtonProps) => {
-  const router = useRouter();
+  const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.user);
 
   const handleBack = () => {
@@ -37,13 +37,13 @@ const BackButton = ({
     const previousUrl = getPreviousUrlInTab(currentSection);
 
     if (previousUrl) {
-      router.push(previousUrl);
+      navigation.push(previousUrl);
     } else {
       const sectionRoot = `/${currentSection}`;
       if (currentPath === sectionRoot) {
-        router.push(fallbackUrl);
+        navigation.push(fallbackUrl);
       } else {
-        router.push(sectionRoot);
+        navigation.push(sectionRoot);
       }
     }
   };

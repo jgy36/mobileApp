@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Alert, FlatList, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { apiClient } from '@/api/apiClient';
 
 interface FollowRequest {
@@ -77,7 +76,7 @@ const FollowRequests = () => {
   };
 
   const navigateToProfile = (username: string) => {
-    router.push(`/profile/${username}`);
+    navigation.push(`/profile/${username}`);
   };
 
   const renderRequest = ({ item: request }: { item: FollowRequest }) => (

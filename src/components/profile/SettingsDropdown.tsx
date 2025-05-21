@@ -7,7 +7,6 @@ import { useDispatch } from "react-redux";
 import { logoutUser } from "@/redux/slices/userSlice";
 import { AppDispatch } from "@/redux/store";
 import { useTheme } from "@/hooks/useTheme";
-import { router } from 'expo-router';
 
 interface SettingsDropdownProps {
   variant?: "icon" | "text";
@@ -21,7 +20,7 @@ const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
   const handleLogout = () => {
     dispatch(logoutUser());
     setIsVisible(false);
-    router.replace('/login');
+    navigation.replace('/login');
   };
 
   const toggleTheme = () => {
@@ -31,7 +30,7 @@ const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
 
   const handleNavigation = (path: string) => {
     setIsVisible(false);
-    router.push(path);
+    navigation.push(path);
   };
 
   const MenuItem = ({ 

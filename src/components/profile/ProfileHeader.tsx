@@ -4,7 +4,6 @@ import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { router } from 'expo-router';
 import SettingsDropdown from "./SettingsDropdown";
 import UserStats from "./UserStats";
 import { getFollowStatus, checkAccountPrivacy } from "@/api/users";
@@ -91,12 +90,12 @@ const ProfileHeader = () => {
     : "Unknown";
 
   const navigateToEditProfile = () => {
-    router.push('/settings?tab=profile');
+    navigation.navigate('settings?tab=profile');
   };
 
   const navigateToLogin = () => {
     const redirect = `profile/${user.username}`;
-    router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+    navigation.push(`/login?redirect=${encodeURIComponent(redirect)}`);
   };
 
   return (

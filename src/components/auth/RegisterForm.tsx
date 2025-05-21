@@ -1,7 +1,7 @@
 // src/components/auth/RegisterForm.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useRegister } from '@/hooks/useApi';
@@ -23,7 +23,7 @@ const RegisterForm = () => {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   
   const { loading, error, execute: register } = useRegister();
-  const router = useRouter();
+  const navigation = useNavigation();
 
   const debouncedCheckUsername = debounce(async (username: string) => {
     // Username checking logic
@@ -47,7 +47,7 @@ const RegisterForm = () => {
       
       if (result?.success) {
         Alert.alert('Success', 'Please check your email to verify your account.');
-        router.push('/verify-email');
+        navigation.navigate('verify-email');
       }
     } catch (err) {
       Alert.alert('Error', 'Registration failed. Please try again.');
@@ -125,7 +125,7 @@ const RegisterForm = () => {
         <Text>{loading ? 'Registering...' : 'Register'}</Text>
       </Button>
       
-      <TouchableOpacity onPress={() => router.push('/login')}>
+      <TouchableOpacity onPress={() => navigation.navigate('login')}>
         <Text className="text-center text-blue-600">
           Already have an account? Login here
         </Text>

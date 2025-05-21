@@ -103,13 +103,13 @@ export function safeNavigateWithParams(
     } catch (error) {
       console.error('Navigation error:', error);
       
-      // Fallback: try using router.push if available (Expo Router)
+      // Fallback: try using navigation.push if available (Expo Router)
       try {
         const { router } = require('expo-router');
         if (params) {
-          router.push({ pathname: screenName, params });
+          navigation.push({ pathname: screenName, params });
         } else {
-          router.push(screenName);
+          navigation.push(screenName);
         }
       } catch (routerError) {
         console.error('Router fallback failed:', routerError);
@@ -168,9 +168,9 @@ export function safeRouterPush(path: string, params?: Record<string, any>): void
   try {
     const { router } = require('expo-router');
     if (params) {
-      router.push({ pathname: path, params });
+      navigation.push({ pathname: path, params });
     } else {
-      router.push(path);
+      navigation.push(path);
     }
   } catch (error) {
     console.error('Router navigation error:', error);

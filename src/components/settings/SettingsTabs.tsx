@@ -2,7 +2,7 @@
 import React, { ReactNode, useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useGlobalSearchParams } from "expo-router";
+
 
 interface TabItem {
   id: string;
@@ -51,14 +51,14 @@ const SettingsTabs: React.FC<SettingsTabsProps> = ({
     }
     // If no tab is specified in URL, update URL with the current active tab
     else if (!tab && activeTab) {
-      router.setParams({ tab: activeTab });
+      navigation.setParams({ tab: activeTab });
     }
   }, [tab, activeTab, isClient, onTabChange, tabs]);
   
   // Handle tab change
   const handleTabChange = (value: string) => {
     // Update URL
-    router.setParams({ tab: value });
+    navigation.setParams({ tab: value });
     
     // Trigger the callback
     onTabChange(value);

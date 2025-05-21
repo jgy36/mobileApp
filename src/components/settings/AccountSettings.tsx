@@ -3,7 +3,13 @@ import React, { useState, useEffect } from "react";
 import { View, ScrollView, Text, Alert, Platform, Linking } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +17,6 @@ import { Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/api/apiClient";
-import { router } from "expo-router";
 
 const AccountSettings: React.FC = () => {
   const user = useSelector((state: RootState) => state.user);
@@ -30,10 +35,13 @@ const AccountSettings: React.FC = () => {
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(
+    null
+  );
 
   // Account deletion states
-  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] =
+    useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -53,14 +61,18 @@ const AccountSettings: React.FC = () => {
     const fetchUserData = async () => {
       try {
         // Fetch email verification status
-        const verificationResponse = await apiClient.get("/users/email/verification-status");
+        const verificationResponse = await apiClient.get(
+          "/users/email/verification-status"
+        );
         setIsEmailVerified(verificationResponse.data?.isVerified || false);
 
         // Fetch email
         setEmail(user.email || "");
 
         // Fetch connected accounts
-        const accountsResponse = await apiClient.get("/users/connected-accounts");
+        const accountsResponse = await apiClient.get(
+          "/users/connected-accounts"
+        );
         setConnectedAccounts(accountsResponse.data || {});
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -96,11 +108,14 @@ const AccountSettings: React.FC = () => {
 
       toast({
         title: "Verification Email Sent",
-        description: "Please check your new email inbox for verification instructions",
+        description:
+          "Please check your new email inbox for verification instructions",
         duration: 5000,
       });
     } catch (error: any) {
-      setEmailError(error.response?.data?.message || "Failed to request email change");
+      setEmailError(
+        error.response?.data?.message || "Failed to request email change"
+      );
       setIsChangingEmail(false);
     }
   };
@@ -118,7 +133,8 @@ const AccountSettings: React.FC = () => {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send verification email. Please try again later.",
+        description:
+          "Failed to send verification email. Please try again later.",
         variant: "destructive",
         duration: 3000,
       });
@@ -147,7 +163,9 @@ const AccountSettings: React.FC = () => {
         duration: 3000,
       });
     } catch (error: any) {
-      setVerificationError(error.response?.data?.message || "Invalid verification code");
+      setVerificationError(
+        error.response?.data?.message || "Invalid verification code"
+      );
     } finally {
       setIsVerifying(false);
     }
@@ -168,11 +186,12 @@ const AccountSettings: React.FC = () => {
             onPress: () => {
               toast({
                 title: "Data Export Requested",
-                description: "You'll receive an email with your data export within 24 hours",
+                description:
+                  "You'll receive an email with your data export within 24 hours",
                 duration: 5000,
               });
-            }
-          }
+            },
+          },
         ]
       );
 
@@ -193,7 +212,10 @@ const AccountSettings: React.FC = () => {
   // Handle account deletion
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== user.username) {
-      Alert.alert("Error", "Please enter your username correctly to confirm deletion");
+      Alert.alert(
+        "Error",
+        "Please enter your username correctly to confirm deletion"
+      );
       return;
     }
 
@@ -210,7 +232,7 @@ const AccountSettings: React.FC = () => {
 
       // Redirect to landing page after a brief delay
       setTimeout(() => {
-        router.replace("/");
+        navigation.replace("/");
       }, 2000);
     } catch (error) {
       toast({
@@ -289,7 +311,7 @@ const AccountSettings: React.FC = () => {
       <View className="flex-1 bg-white p-4">
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-xl font-bold">Change Email Address</Text>
-          <Button 
+          <Button
             onPress={() => setIsChangeEmailModalOpen(false)}
             variant="ghost"
             size="sm"
@@ -301,7 +323,8 @@ const AccountSettings: React.FC = () => {
         {!verificationSent ? (
           <View className="space-y-4">
             <Text className="text-gray-600">
-              Enter your new email address. We'll send a verification link to confirm the change.
+              Enter your new email address. We'll send a verification link to
+              confirm the change.
             </Text>
 
             <View className="space-y-2">
@@ -328,13 +351,14 @@ const AccountSettings: React.FC = () => {
 
             <View className="p-4 bg-blue-50 rounded-lg">
               <Text className="text-sm text-blue-700">
-                After submitting, you'll receive a verification email at your new address. 
-                You must click the link in that email to complete the change.
+                After submitting, you'll receive a verification email at your
+                new address. You must click the link in that email to complete
+                the change.
               </Text>
             </View>
 
-            <Button 
-              onPress={handleChangeEmail} 
+            <Button
+              onPress={handleChangeEmail}
               disabled={isChangingEmail || !newEmail}
               className="mt-6"
             >
@@ -345,12 +369,14 @@ const AccountSettings: React.FC = () => {
           <View className="space-y-4">
             <View className="p-4 bg-green-50 rounded-lg border border-green-200">
               <Text className="text-green-700">
-                Verification email sent to {newEmail}. Please check your inbox and follow the instructions.
+                Verification email sent to {newEmail}. Please check your inbox
+                and follow the instructions.
               </Text>
             </View>
 
             <Text className="text-gray-600">
-              Don't see the email? Check your spam folder or tap "Resend Verification" below.
+              Don't see the email? Check your spam folder or tap "Resend
+              Verification" below.
             </Text>
 
             <Button onPress={handleChangeEmail} disabled={isChangingEmail}>
@@ -372,7 +398,7 @@ const AccountSettings: React.FC = () => {
       <View className="flex-1 bg-white p-4">
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-xl font-bold">Verify Your Email</Text>
-          <Button 
+          <Button
             onPress={() => setIsVerificationModalOpen(false)}
             variant="ghost"
             size="sm"
@@ -390,7 +416,9 @@ const AccountSettings: React.FC = () => {
             <Label>Verification Code</Label>
             <Input
               value={verificationCode}
-              onChangeText={(text) => setVerificationCode(text.replace(/\D/g, "").substring(0, 6))}
+              onChangeText={(text) =>
+                setVerificationCode(text.replace(/\D/g, "").substring(0, 6))
+              }
               placeholder="000000"
               keyboardType="numeric"
               maxLength={6}
@@ -406,7 +434,7 @@ const AccountSettings: React.FC = () => {
 
           <Text className="text-gray-600">
             Didn't receive a code?{" "}
-            <Text 
+            <Text
               className="text-blue-600 underline"
               onPress={handleSendVerificationEmail}
             >
@@ -414,8 +442,8 @@ const AccountSettings: React.FC = () => {
             </Text>
           </Text>
 
-          <Button 
-            onPress={handleVerifyEmail} 
+          <Button
+            onPress={handleVerifyEmail}
             disabled={isVerifying || verificationCode.length !== 6}
             className="mt-6"
           >
@@ -435,8 +463,10 @@ const AccountSettings: React.FC = () => {
     >
       <View className="flex-1 bg-white p-4">
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold text-red-600">Delete Your Account</Text>
-          <Button 
+          <Text className="text-xl font-bold text-red-600">
+            Delete Your Account
+          </Text>
+          <Button
             onPress={() => setIsDeleteAccountModalOpen(false)}
             variant="ghost"
             size="sm"
@@ -446,19 +476,22 @@ const AccountSettings: React.FC = () => {
         </View>
 
         <Text className="text-gray-600 mb-6">
-          This action is permanent and cannot be undone. All your data will be permanently deleted.
+          This action is permanent and cannot be undone. All your data will be
+          permanently deleted.
         </Text>
 
         <View className="p-4 bg-red-50 rounded-lg border border-red-200 mb-6">
           <Text className="text-red-700">
-            This will delete your account, posts, comments, and all other data. This action cannot be reversed.
+            This will delete your account, posts, comments, and all other data.
+            This action cannot be reversed.
           </Text>
         </View>
 
         <View className="space-y-4">
           <Label>Type your username to confirm</Label>
           <Text className="text-gray-600">
-            Please type <Text className="font-bold">{user.username}</Text> to confirm
+            Please type <Text className="font-bold">{user.username}</Text> to
+            confirm
           </Text>
           <Input
             value={deleteConfirmText}
@@ -466,7 +499,7 @@ const AccountSettings: React.FC = () => {
             placeholder={user.username || ""}
           />
 
-          <Button 
+          <Button
             onPress={handleDeleteAccount}
             disabled={isDeleting || deleteConfirmText !== user.username}
             variant="destructive"
@@ -506,8 +539,12 @@ const AccountSettings: React.FC = () => {
             </View>
 
             <View className="flex-row items-center space-x-2">
-              <Input value={email} editable={false} className="flex-1 bg-gray-100" />
-              <Button 
+              <Input
+                value={email}
+                editable={false}
+                className="flex-1 bg-gray-100"
+              />
+              <Button
                 onPress={() => setIsChangeEmailModalOpen(true)}
                 size="sm"
                 variant="outline"
@@ -540,7 +577,9 @@ const AccountSettings: React.FC = () => {
             <View className="flex-row items-center gap-2 p-3 border rounded-md bg-gray-50">
               <View className="h-2 w-2 rounded-full bg-blue-500" />
               <Text>
-                {user.role === "ADMIN" ? "Administrator Account" : "Standard User Account"}
+                {user.role === "ADMIN"
+                  ? "Administrator Account"
+                  : "Standard User Account"}
               </Text>
             </View>
           </View>
@@ -548,7 +587,7 @@ const AccountSettings: React.FC = () => {
           {/* Connected Accounts Section */}
           <View className="space-y-4 border-t pt-6">
             <Label className="text-base font-medium">Connected Accounts</Label>
-            
+
             {/* Google */}
             <View className="p-4 border rounded-md flex-row justify-between items-center">
               <View className="flex-row items-center">
@@ -563,9 +602,10 @@ const AccountSettings: React.FC = () => {
                 </View>
               </View>
               <Button
-                onPress={() => connectedAccounts.google 
-                  ? handleDisconnectAccount("google") 
-                  : handleConnectAccount("google")
+                onPress={() =>
+                  connectedAccounts.google
+                    ? handleDisconnectAccount("google")
+                    : handleConnectAccount("google")
                 }
                 size="sm"
                 variant="outline"
@@ -588,9 +628,10 @@ const AccountSettings: React.FC = () => {
                 </View>
               </View>
               <Button
-                onPress={() => connectedAccounts.facebook 
-                  ? handleDisconnectAccount("facebook") 
-                  : handleConnectAccount("facebook")
+                onPress={() =>
+                  connectedAccounts.facebook
+                    ? handleDisconnectAccount("facebook")
+                    : handleConnectAccount("facebook")
                 }
                 size="sm"
                 variant="outline"
@@ -613,9 +654,10 @@ const AccountSettings: React.FC = () => {
                 </View>
               </View>
               <Button
-                onPress={() => connectedAccounts.twitter 
-                  ? handleDisconnectAccount("twitter") 
-                  : handleConnectAccount("twitter")
+                onPress={() =>
+                  connectedAccounts.twitter
+                    ? handleDisconnectAccount("twitter")
+                    : handleConnectAccount("twitter")
                 }
                 size="sm"
                 variant="outline"
@@ -628,7 +670,7 @@ const AccountSettings: React.FC = () => {
           {/* Account Management Section */}
           <View className="space-y-4 border-t pt-6">
             <Label className="text-base font-medium">Account Management</Label>
-            
+
             {/* Export Data */}
             <View className="p-4 border rounded-md">
               <View className="flex-row items-start">
@@ -636,7 +678,8 @@ const AccountSettings: React.FC = () => {
                 <View className="ml-3 flex-1">
                   <Text className="font-medium">Export Your Data</Text>
                   <Text className="text-sm text-gray-600 mb-3">
-                    Request an export of all your data including posts, comments, and profile information.
+                    Request an export of all your data including posts,
+                    comments, and profile information.
                   </Text>
                   <Button
                     onPress={handleExportData}
@@ -655,9 +698,12 @@ const AccountSettings: React.FC = () => {
               <View className="flex-row items-start">
                 <Ionicons name="trash-outline" size={20} color="red" />
                 <View className="ml-3 flex-1">
-                  <Text className="font-medium text-red-600">Delete Account</Text>
+                  <Text className="font-medium text-red-600">
+                    Delete Account
+                  </Text>
                   <Text className="text-sm text-gray-600 mb-3">
-                    Permanently delete your account and all your data. This action cannot be undone.
+                    Permanently delete your account and all your data. This
+                    action cannot be undone.
                   </Text>
                   <Button
                     onPress={() => setIsDeleteAccountModalOpen(true)}

@@ -1,7 +1,7 @@
 // src/screens/community/CommunityDetailScreen.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert, ImageBackground } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Card } from "@/components/ui/card";
 import BackButton from "@/components/navigation/BackButton";
 import LoadingState from "@/components/ui/LoadingState";
@@ -21,7 +21,9 @@ import { useCommunity } from "@/hooks/useCommunity";
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
 
 const CommunityDetailScreen = () => {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { id } = route.params as { id: string };
   
   // Use our custom hook to manage community data
   // Pass undefined instead of null for optional parameters
@@ -49,7 +51,7 @@ const CommunityDetailScreen = () => {
                 {error || `The community "${id}" doesn't exist or may have been removed.`}
               </Text>
               <TouchableOpacity 
-                onPress={() => router.push("/community")} 
+                onPress={() => navigation.navigate('Communities')} 
                 className="mt-4 px-4 py-2 bg-primary rounded-lg"
               >
                 <Text className="text-primary-foreground">Back to Communities</Text>
