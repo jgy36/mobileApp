@@ -8,7 +8,7 @@ import {
   detectSectionFromRoute,
   saveNavigationState 
 } from '@/utils/navigationStateManager';
-import { useRouter, useSegments, usePathname } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { useFocusEffect } from '@react-navigation/native';
 
 /**
@@ -16,7 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
  * @returns Object containing navigation handler and current section info
  */
 export const useSectionNavigation = () => {
-  const router = useRouter();
+  const navigation = useNavigation();
   const segments = useSegments();
   const pathname = usePathname();
   const user = useSelector((state: RootState) => state.user);
@@ -96,13 +96,13 @@ export const useSectionNavigation = () => {
     try {
       // If clicking the profile tab, always go directly to /profile
       if (section === 'profile') {
-        router.push('/profile');
+        navigation.navigate('profile');
         return;
       }
       
       // For other sections, navigate to section root if we're already in that section
       if (section === currentSection) {
-        router.push(`/${section}`);
+        navigation.push(`/${section}`);
         return;
       }
       
@@ -115,15 +115,15 @@ export const useSectionNavigation = () => {
             user.username && 
             !lastPath.includes(`/profile/${user.username}`)) {
           // If it's another user's profile, reset to base section path
-          router.push(`/${section}`);
+          navigation.push(`/${section}`);
         } else {
           // Navigate to last path if it exists and is valid
-          router.push(lastPath || `/${section}`);
+          navigation.push(lastPath || `/${section}`);
         }
       } catch (error) {
         // Fallback to basic section navigation if there's any issue
         console.error('Navigation error:', error);
-        router.push(`/${section}`);
+        navigation.push(`/${section}`);
       }
     } catch (error) {
       console.error('Section navigation error:', error);

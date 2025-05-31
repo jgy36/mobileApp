@@ -1,7 +1,7 @@
 // src/components/auth/LoginForm.tsx
 import React, { useState } from 'react';
 import { View, Text, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { useDispatch } from 'react-redux';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ const LoginForm = () => {
   const [tempToken, setTempToken] = useState('');
   
   const { loading, error, execute: login } = useLogin();
-  const router = useRouter();
+  const navigation = useNavigation();
   const dispatch = useDispatch();
 
   const handleSubmit = async () => {
@@ -34,7 +34,7 @@ const LoginForm = () => {
       }
 
       if (result?.token) {
-        router.push('/feed');
+        navigation.navigate('feed');
       }
     } catch (err) {
       Alert.alert('Error', 'Login failed. Please try again.');
@@ -101,7 +101,7 @@ const LoginForm = () => {
         <Text>{loading ? 'Logging in...' : 'Login'}</Text>
       </Button>
       
-      <Button variant="outline" onPress={() => router.push('/register')}>
+      <Button variant="outline" onPress={() => navigation.navigate('register')}>
         <Text>Don't have an account? Register here</Text>
       </Button>
     </View>

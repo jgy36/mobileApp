@@ -12,6 +12,12 @@ interface BadgeState {
   initialized: boolean;
 }
 
+// Initial state with default values
+const initialState: BadgeState = {
+  badges: [], // Start with empty and initialize on app load
+  initialized: false
+};
+
 // Helper to load badges from AsyncStorage with proper user isolation
 const loadUserBadges = async (): Promise<string[]> => {
   try {
@@ -79,14 +85,15 @@ export const fetchUserBadges = createAsyncThunk(
 export const initializeBadges = createAsyncThunk(
   'badges/initialize',
   async () => {
-    return await loadUserBadges();
+    try {
+      // Return empty array if loading fails
+      return await loadUserBadges() || [];
+    } catch (error) {
+      console.error('Error initializing badges:', error);
+      return []; // Always return a valid array
+    }
   }
 );
-
-const initialState: BadgeState = {
-  badges: [], // Start with empty and initialize on app load
-  initialized: false
-};
 
 const badgeSlice = createSlice({
   name: "badges",
@@ -99,54 +106,76 @@ const badgeSlice = createSlice({
       // Only add if not already present and under limit
       if (!state.badges.includes(badgeId) && state.badges.length < 10) {
         state.badges.push(badgeId);
-        saveUserBadges(state.badges);
+        // Use non-blocking approach for AsyncStorage
+        saveUserBadges(state.badges).catch(err => console.error('Error saving badge:', err));
       }
     },
     
     // Remove a badge
     removeBadge: (state, action: PayloadAction<string>) => {
       state.badges = state.badges.filter(id => id !== action.payload);
-      saveUserBadges(state.badges);
+      // Use non-blocking approach for AsyncStorage
+      saveUserBadges(state.badges).catch(err => console.error('Error removing badge:', err));
     },
     
     // Set all badges at once (limited to 10)
     setBadges: (state, action: PayloadAction<string[]>) => {
-      // Ensure we don't exceed the 10 badge limit
-      state.badges = action.payload.slice(0, 10);
+      // Ensure we don't exceed the 10 badge limit and that it's always an array
+      const badgeArray = Array.isArray(action.payload) ? action.payload : [];
+      state.badges = badgeArray.slice(0, 10);
       state.initialized = true;
-      saveUserBadges(state.badges);
+      // Use non-blocking approach for AsyncStorage
+      saveUserBadges(state.badges).catch(err => console.error('Error setting badges:', err));
     },
     
     // Clear all badges (used during logout)
     clearBadges: (state) => {
       state.badges = [];
       state.initialized = false;
-      clearUserBadgesFromStorage();
+      // Use non-blocking approach for AsyncStorage
+      clearUserBadgesFromStorage().catch(err => console.error('Error clearing badges:', err));
     }
   },
   extraReducers: (builder) => {
     // Handle initializeBadges
     builder.addCase(initializeBadges.fulfilled, (state, action) => {
       if (!state.initialized) {
-        state.badges = action.payload;
+        // Ensure action.payload is an array
+        state.badges = Array.isArray(action.payload) ? action.payload : [];
         state.initialized = true;
       }
+    });
+    
+    // Add a separate case for when initialize fails
+    builder.addCase(initializeBadges.rejected, (state) => {
+      // Still mark as initialized even if loading failed
+      state.badges = [];
+      state.initialized = true;
     });
 
     // Handle fetchUserBadges
     builder.addCase(fetchUserBadges.fulfilled, (state, action) => {
-      if (action.payload && action.payload.length > 0) {
+      // Ensure action.payload is an array
+      const badgeArray = Array.isArray(action.payload) ? action.payload : [];
+      
+      if (badgeArray.length > 0) {
         // If we have server-side badges, use those
-        state.badges = action.payload;
+        state.badges = badgeArray;
       } else if (!state.initialized) {
-        // If not initialized yet and no server badges, badges will be empty
+        // If not initialized yet and no server badges, ensure badges is a valid array
         state.badges = [];
       }
       // Either way, mark as initialized
       state.initialized = true;
       
-      // Save to AsyncStorage
-      saveUserBadges(state.badges);
+      // Save to AsyncStorage - use non-blocking approach
+      saveUserBadges(state.badges).catch(err => console.error('Error saving badges from server:', err));
+    });
+    
+    // Add a separate case for when fetch fails
+    builder.addCase(fetchUserBadges.rejected, (state) => {
+      // Still mark as initialized even if fetch failed
+      state.initialized = true;
     });
   }
 });

@@ -16,14 +16,14 @@ export const injectStore = (store: any) => {
   storeInstance = store;
 };
 
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 // Temporarily hardcode for testing - place this in apiClient.ts
-const devHost = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
-export const API_BASE_URL = `http://${devHost}:8080/api`;  
+const devHost = Platform.OS === "android" ? "10.0.2.2" : "localhost";
+export const API_BASE_URL = `http://${devHost}:8080/api`;
 export const BASE_URL = `http://${devHost}:8080`;
 
-console.log('API_BASE_URL is configured as:', API_BASE_URL);
+console.log("API_BASE_URL is configured as:", API_BASE_URL);
 
 // Interface for token refresh (unchanged)
 export interface TokenRefreshResponse {
@@ -78,18 +78,18 @@ const processQueue = (error: Error | null, value: unknown = null) => {
 // Add this to validateAuthState or other key API functions
 export const validateAuthState = async (): Promise<boolean> => {
   try {
-    console.log('Validating auth with URL:', API_BASE_URL);
+    console.log("Validating auth with URL:", API_BASE_URL);
     const token = await getToken();
-    console.log('Token exists:', !!token);
-    
+    console.log("Token exists:", !!token);
+
     if (!token) return false;
-    
-    console.log('Making request to:', `${API_BASE_URL}/users/me`);
-    const response = await apiClient.get('/users/me');
-    console.log('Auth check successful!');
+
+    console.log("Making request to:", `${API_BASE_URL}/users/me`);
+    const response = await apiClient.get("/users/me");
+    console.log("Auth check successful!");
     return true;
   } catch (error: any) {
-    console.error('Auth check failed with details:', {
+    console.error("Auth check failed with details:", {
       message: error.message,
       code: error.code,
       config: error.config?.url,
@@ -115,10 +115,17 @@ export const createApiClient = (options: ApiClientOptions = {}) => {
 
   const config: ApiClientOptions = { ...defaultOptions, ...options };
 
+  // ADD THE LOGGING CODE RIGHT HERE, after the config line above
+  console.log("Creating API client with configuration:");
+  console.log("- Base URL:", config.baseURL);
+  console.log("- Platform:", Platform.OS);
+  console.log("- Dev host:", devHost);
+  console.log("- Timeout:", config.timeout);
+
   // Create the axios instance
   const instance = axios.create({
     baseURL: config.baseURL,
-    timeout: config.timeout || 30000, // Default 30s timeout
+    timeout: 10000, // Changed from 30000 to 10000 (10 seconds)
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { followUser, unfollowUser, getFollowStatus, checkAccountPrivacy } from '@/api/users';
 
 
@@ -29,7 +29,7 @@ const FollowButton = ({
   
   const isAuthenticated = useSelector((state: RootState) => !!state.user.token);
   const currentUserId = useSelector((state: RootState) => state.user.id);
-  const router = useRouter();
+  const navigation = useNavigation();
 
   // Size variants
   const sizeClasses = {
@@ -70,7 +70,7 @@ const FollowButton = ({
 
   const handleToggleFollow = async () => {
     if (!isAuthenticated) {
-      router.push(`/login?redirect=/profile/${userId}`);
+      navigation.push(`/login?redirect=/profile/${userId}`);
       return;
     }
 

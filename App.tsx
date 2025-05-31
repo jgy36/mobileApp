@@ -11,9 +11,17 @@ import { StatusBar } from "expo-status-bar";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LogBox, View, Text, ActivityIndicator, Button } from "react-native";
 import { store, persistor } from "./src/redux/store";
+import { apiClient } from "./src/api/apiClient";
+import { getToken } from "./src/utils/tokenUtils";
+import * as Network from 'expo-network';  // Add this import at the top with other imports
+
 
 // Hide known warnings
-LogBox.ignoreLogs(["Require cycle:", "[expo-av]", "ImmutableStateInvariantMiddleware"]);
+LogBox.ignoreLogs([
+  "Require cycle:",
+  "[expo-av]",
+  "ImmutableStateInvariantMiddleware",
+]);
 
 // Initialize apiClient with store
 injectStore(store);
@@ -154,11 +162,37 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
     const initializeApp = async () => {
       try {
         console.log("Starting auth state restoration...");
-        // Restore auth state
+
+        // Check if we have a token first
+        const token = await getToken();
+
+        if (!token) {
+          console.log("No token found, skipping auth check");
+          // Don't attempt to restore auth state if no token exists
+          await dispatch({
+            type: "user/restoreAuthState/fulfilled",
+            payload: {
+              isAuthenticated: false,
+              id: null,
+              token: null,
+              username: null,
+              email: null,
+              displayName: null,
+              bio: null,
+              profileImageUrl: null,
+              role: null,
+            },
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Only try to restore state if we already have a token
         await dispatch(restoreAuthState()).unwrap();
         console.log("Auth state restored successfully", {
           isAuthenticated: store.getState().user.isAuthenticated,
-          reduxState: JSON.stringify(store.getState().user).substring(0, 100) + "..."
+          reduxState:
+            JSON.stringify(store.getState().user).substring(0, 100) + "...",
         });
 
         // Initialize badges if authenticated
@@ -167,14 +201,36 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
           dispatch(initializeBadges());
         }
       } catch (error) {
-        console.error("Error initializing app:", 
-                    error instanceof Error ? error.message : "Unknown error",
-                    error);
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Unknown initialization error"
+        console.error(
+          "Error initializing app:",
+          error instanceof Error ? error.message : "Unknown error",
+          error
         );
+
+        // Don't set error state for auth failures - just set not authenticated
+        if (error instanceof Error && error.toString().includes("401")) {
+          console.log("Auth check failed with 401 - setting not authenticated");
+          await dispatch({
+            type: "user/restoreAuthState/fulfilled",
+            payload: {
+              isAuthenticated: false,
+              id: null,
+              token: null,
+              username: null,
+              email: null,
+              displayName: null,
+              bio: null,
+              profileImageUrl: null,
+              role: null,
+            },
+          });
+        } else {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Unknown initialization error"
+          );
+        }
       } finally {
         console.log("Initialization complete, setting isLoading to false");
         setIsLoading(false);
@@ -308,67 +364,66 @@ function AppNavigator() {
 }
 
 // Main App component with error handling and emergency debug render
+// App.tsx - FIXED VERSION
+// Then in your App component:
 export default function App() {
   console.log("App component initializing...");
   const [hasError, setHasError] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
-  const [debugMode, setDebugMode] = React.useState(true); // Set to true for emergency debugging
+  const [appState, setAppState] = React.useState("initializing");
 
-  // EMERGENCY DEBUGGING
-  if (debugMode) {
-    console.log("Rendering emergency debug screen");
+  // Simplified initialization to help debug
+  useEffect(() => {
+    console.log("App component mounted, setting state to 'mounted'");
+    setAppState("mounted");
+
+    // Simple test to check if basic React functionality works
+    setTimeout(() => {
+      console.log("Setting appState to 'ready' after timeout");
+      setAppState("ready");
+    }, 2000);
+
+    // Network check function - moved to separate effect to isolate potential issues
+    return () => console.log("App component unmounted");
+  }, []);
+
+  // Separate useEffect for network tests to isolate potential issues
+  useEffect(() => {
+    if (appState !== "mounted") return;
+    
+    console.log("Starting network tests...");
+    const runNetworkTests = async () => {
+      try {
+        console.log("Checking network state...");
+        const networkState = await Network.getNetworkStateAsync();
+        console.log("Network state:", networkState);
+      } catch (error) {
+        console.error("Failed to get network state:", 
+          error instanceof Error ? error.message : "Unknown error");
+      }
+    };
+    
+    runNetworkTests().catch(err => {
+      console.error("Uncaught error in network tests:", err);
+    });
+  }, [appState]);
+
+  // Add this to test rendering without Redux
+  if (appState === "initializing") {
     return (
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white'
-      }}>
-        <Text style={{ fontSize: 20, marginBottom: 20 }}>EMERGENCY DEBUG SCREEN</Text>
-        <Text style={{ marginBottom: 10 }}>App is rendering but Redux might be broken</Text>
-        <Button 
-          title="Try Full App" 
-          onPress={() => setDebugMode(false)} 
-        />
-        
-        <View style={{
-          position: 'absolute',
-          top: 50,
-          right: 20,
-          backgroundColor: 'blue',
-          padding: 10,
-          borderRadius: 5
-        }}>
-          <Text style={{ color: 'white' }}>Debug Indicator</Text>
-        </View>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightblue" }}>
+        <Text>Initializing app...</Text>
       </View>
     );
   }
 
-  useEffect(() => {
-    console.log("App component mounted");
-
-    // Connection test code with improved logging
-    console.log("Testing direct connection to backend...");
-    fetch("http://10.0.2.2:8080/api/auth/check-username", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username: "test" }),
-    })
-      .then((response) => {
-        console.log("Server responded!", response.status);
-        return response.text();
-      })
-      .then((text) => console.log("Response:", text))
-      .catch((error) => {
-        console.error("Connection test failed:", error.message, 
-                  "Make sure your backend server is running at http://localhost:8080");
-      });
-
-    return () => console.log("App component unmounted");
-  }, []);
+  if (appState === "mounted") {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightgreen" }}>
+        <Text>App mounted, running tests...</Text>
+      </View>
+    );
+  }
 
   if (hasError && error) {
     return <ErrorScreen error={error} resetError={() => setHasError(false)} />;
@@ -394,7 +449,10 @@ export default function App() {
           persistor={persistor}
           onBeforeLift={() => {
             console.log("PersistGate: Before lift");
-            console.log("Initial Redux State:", JSON.stringify(store.getState().user).substring(0, 100) + "...");
+            console.log(
+              "Initial Redux State:",
+              JSON.stringify(store.getState().user).substring(0, 100) + "..."
+            );
           }}
         >
           <StatusBar style="auto" />
@@ -418,17 +476,12 @@ export default function App() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#fff",
+          backgroundColor: "pink",
         }}
       >
         <Text style={{ color: "red", fontSize: 18 }}>App loading error!</Text>
         <Text>{err instanceof Error ? err.message : "Unknown error"}</Text>
         <Text>Check console logs for details</Text>
-        <Button 
-          title="Try Emergency Mode" 
-          onPress={() => setDebugMode(true)} 
-          color="green"
-        />
       </View>
     );
   }

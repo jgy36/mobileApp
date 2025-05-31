@@ -14,6 +14,7 @@ import {
   setAuthenticated,
   getUserId,
 } from "@/utils/tokenUtils";
+import { getToken } from "@/utils/tokenUtils";
 
 /**
  * Login a user - React Native version
@@ -158,6 +159,15 @@ export const refreshToken = async (): Promise<boolean> => {
  */
 export const checkAuthStatus = async (): Promise<boolean> => {
   try {
+    // Check if a token exists first
+    const token = await getToken();
+    if (!token) {
+      console.log('No token found, skipping auth check');
+      await setAuthenticated(false);
+      return false;
+    }
+    
+    // Only make API call if token exists
     const response = await apiClient.get<{
       id?: number;
       username?: string;

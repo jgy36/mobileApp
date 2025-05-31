@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useSelector } from "react-redux";
+import { useNavigation } from '@react-navigation/native';
 import { RootState } from "@/redux/store";
-import { router } from 'expo-router';
 import SettingsDropdown from "./SettingsDropdown";
 import UserStats from "./UserStats";
 import { getFollowStatus, checkAccountPrivacy } from "@/api/users";
@@ -20,6 +20,7 @@ interface UserData {
 }
 
 const ProfileHeader = () => {
+  const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.user);
   const currentUser = useSelector((state: RootState) => state.user);
   const isAuthenticated = !!currentUser.token;
@@ -91,12 +92,12 @@ const ProfileHeader = () => {
     : "Unknown";
 
   const navigateToEditProfile = () => {
-    router.push('/settings?tab=profile');
+    navigation.navigate('Settings', { tab: 'profile' });
   };
 
   const navigateToLogin = () => {
     const redirect = `profile/${user.username}`;
-    router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+    navigation.navigate('Login', { redirect: encodeURIComponent(redirect) });
   };
 
   return (

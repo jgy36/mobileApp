@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, Image, Alert, FlatList, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { apiClient } from '@/api/apiClient';
+import { useNavigation } from '@react-navigation/native';
 
 interface FollowRequest {
   id: number;
@@ -15,6 +15,7 @@ interface FollowRequest {
 }
 
 const FollowRequests = () => {
+  const navigation = useNavigation();
   const [requests, setRequests] = useState<FollowRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +78,7 @@ const FollowRequests = () => {
   };
 
   const navigateToProfile = (username: string) => {
-    router.push(`/profile/${username}`);
+    navigation.navigate('UserProfile', { username });
   };
 
   const renderRequest = ({ item: request }: { item: FollowRequest }) => (

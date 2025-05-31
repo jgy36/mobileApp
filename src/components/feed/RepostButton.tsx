@@ -4,7 +4,7 @@ import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, P
 
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { useCreatePost } from '@/hooks/useApi';
 
 interface RepostButtonProps {
@@ -24,12 +24,12 @@ const RepostButton = ({
   const [isReposting, setIsReposting] = useState(false);
   const [repostComment, setRepostComment] = useState("");
   const user = useSelector((state: RootState) => state.user);
-  const router = useRouter();
+  const navigation = useNavigation();
   const { execute: createPost } = useCreatePost();
 
   const handleOpenRepost = (e: React.EventObject) => {
     if (!user.token) {
-      router.push(`/login`);
+      navigation.push(`/login`);
       return;
     }
 

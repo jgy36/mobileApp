@@ -32,6 +32,7 @@ const userPersistConfig = {
   whitelist: ['id', 'username', 'email', 'displayName', 'bio', 'profileImageUrl', 'isAuthenticated', 'role'],
   transforms: [DebugTransform], // Add debug transform
   debug: true, // Enable debug logging
+  timeout: 30000, // 30 seconds timeout
 };
 
 const communitiesPersistConfig = {
@@ -39,6 +40,7 @@ const communitiesPersistConfig = {
   storage: AsyncStorage,
   whitelist: ['joinedCommunities', 'featuredCommunities', 'isSidebarOpen'],
   debug: true,
+  timeout: 30000,
 };
 
 const notificationsPersistConfig = {
@@ -46,6 +48,7 @@ const notificationsPersistConfig = {
   storage: AsyncStorage,
   whitelist: ['preferences', 'communityPreferences'],
   debug: true,
+  timeout: 30000,
 };
 
 const privacyPersistConfig = {
@@ -53,6 +56,7 @@ const privacyPersistConfig = {
   storage: AsyncStorage,
   whitelist: ['settings'],
   debug: true,
+  timeout: 30000,
 };
 
 const badgesPersistConfig = {
@@ -60,6 +64,7 @@ const badgesPersistConfig = {
   storage: AsyncStorage,
   whitelist: ['badges', 'initialized'],
   debug: true,
+  timeout: 30000, // Increased timeout for badges
 };
 
 // Create persisted reducers
@@ -95,7 +100,10 @@ export const store = configureStore({
 
 console.log("Store configuration complete, initializing persistor...");
 
-export const persistor = persistStore(store, null, () => {
+// Create persistor with config options
+export const persistor = persistStore(store, {
+  // No options needed here
+}, () => {
   console.log("Redux store has been persisted and rehydrated");
   console.log("Current store state:", 
               JSON.stringify(store.getState().user).substring(0, 100) + "...");

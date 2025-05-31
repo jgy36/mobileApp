@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { savePost, checkPostSaveStatus } from '@/api/posts';
 
 interface SaveButtonProps {
@@ -16,7 +16,7 @@ const SaveButton = ({ postId, isSaved: initialIsSaved }: SaveButtonProps) => {
   const [saved, setSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
   const user = useSelector((state: RootState) => state.user);
-  const router = useRouter();
+  const navigation = useNavigation();
 
   // Check the actual saved status when component mounts
   useEffect(() => {
@@ -43,7 +43,7 @@ const SaveButton = ({ postId, isSaved: initialIsSaved }: SaveButtonProps) => {
     setIsLoading(true);
     
     if (!user.token) {
-      router.push('/login');
+      navigation.navigate('login');
       setIsLoading(false);
       return;
     }

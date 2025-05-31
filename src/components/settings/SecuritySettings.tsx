@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Ionicons } from "@expo/vector-icons";
 import { useToast } from "@/hooks/use-toast";
-import { router } from "expo-router";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { apiClient } from "@/api/apiClient";
@@ -235,7 +234,7 @@ const SecuritySettings: React.FC = () => {
               
               // Redirect to login after a short delay
               setTimeout(() => {
-                router.replace("/login");
+                navigation.replace("/login");
               }, 2000);
             } catch (error) {
               toast({

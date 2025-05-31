@@ -1,6 +1,14 @@
-// src/screens/LandingScreen.tsx
 import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, StatusBar, SafeAreaView, StyleSheet } from "react-native";
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StatusBar, 
+  SafeAreaView, 
+  StyleSheet,
+  Animated,
+  Dimensions
+} from "react-native";
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
@@ -10,9 +18,21 @@ import * as WebBrowser from 'expo-web-browser';
 
 WebBrowser.maybeCompleteAuthSession();
 
+const { width } = Dimensions.get('window');
+
 const LandingScreen = () => {
   const navigation = useNavigation();
   const user = useSelector((state: RootState) => state.user);
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+
+  // Animation on mount
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -41,21 +61,20 @@ const LandingScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f3f4f6" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
       
-      <View style={styles.content}>
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         {/* Logo Section */}
         <View style={styles.logoSection}>
-          <View style={styles.logoCircle}>
-            <MaterialIcons name="how-to-vote" size={48} color="white" />
+          <View style={styles.logoContainer}>
+            <View style={styles.logoBackground} />
+            <View style={styles.logoCircle}>
+              <MaterialIcons name="how-to-vote" size={44} color="white" />
+            </View>
           </View>
           
-          <Text style={styles.title}>
-            Join Today
-          </Text>
-          <Text style={styles.subtitle}>
-            Connect with your political community
-          </Text>
+          <Text style={styles.title}>Political App</Text>
+          <Text style={styles.subtitle}>Connect with your political community and make your voice heard</Text>
         </View>
 
         {/* Buttons Section */}
@@ -65,33 +84,30 @@ const LandingScreen = () => {
             onPress={handleGoogleSignIn}
             disabled={!request}
             style={styles.googleButton}
+            activeOpacity={0.8}
           >
             <View style={styles.googleIcon}>
               <Text style={styles.googleIconText}>G</Text>
             </View>
-            <Text style={styles.googleButtonText}>
-              Sign Up with Google
-            </Text>
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
           </TouchableOpacity>
 
           {/* Create Account Button */}
           <TouchableOpacity
             onPress={() => (navigation as any).navigate('Register')}
             style={styles.createAccountButton}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>
-              Create Account
-            </Text>
+            <Text style={styles.buttonText}>Create Account</Text>
           </TouchableOpacity>
 
           {/* Sign In Button */}
           <TouchableOpacity
             onPress={() => (navigation as any).navigate('Login')}
             style={styles.signInButton}
+            activeOpacity={0.8}
           >
-            <Text style={styles.buttonText}>
-              Sign In
-            </Text>
+            <Text style={styles.signInButtonText}>Sign In</Text>
           </TouchableOpacity>
         </View>
 
@@ -102,7 +118,7 @@ const LandingScreen = () => {
           {' '}and{' '}
           <Text style={styles.linkText}>Privacy Policy</Text>
         </Text>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -110,7 +126,7 @@ const LandingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#f8fafc', // Lighter background similar to shadcn
   },
   content: {
     flex: 1,
@@ -121,35 +137,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 48,
   },
-  logoCircle: {
-    width: 96,
-    height: 96,
-    backgroundColor: '#2563eb',
-    borderRadius: 48,
+  logoContainer: {
+    marginBottom: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+  },
+  logoBackground: {
+    position: 'absolute',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  logoCircle: {
+    width: 88,
+    height: 88,
+    backgroundColor: '#3b82f6',
+    borderRadius: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 5,
   },
   title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#1f2937',
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#1e293b', // Darker text for better contrast
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#4b5563',
+    fontSize: 16,
+    color: '#64748b', // More muted subtitle
     textAlign: 'center',
     lineHeight: 24,
+    paddingHorizontal: width * 0.05,
   },
   buttonsContainer: {
-    marginBottom: 16,
+    width: '100%',
+    marginBottom: 24,
   },
   googleButton: {
     width: '100%',
@@ -158,79 +188,82 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: '#d1d5db',
-    paddingVertical: 16,
+    borderColor: '#e2e8f0',
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   googleIcon: {
-    width: 20,
-    height: 20,
+    width: 22,
+    height: 22,
     backgroundColor: '#ef4444',
-    borderRadius: 10,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   googleIconText: {
     color: 'white',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   googleButtonText: {
-    color: '#1f2937',
+    color: '#0f172a',
     fontWeight: '600',
     fontSize: 16,
   },
   createAccountButton: {
     width: '100%',
-    backgroundColor: '#2563eb',
-    paddingVertical: 16,
+    backgroundColor: '#3b82f6',
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 1,
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   signInButton: {
     width: '100%',
-    backgroundColor: '#4b5563',
-    paddingVertical: 16,
+    backgroundColor: 'transparent',
+    paddingVertical: 14,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
   },
   buttonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
   },
+  signInButtonText: {
+    color: '#334155',
+    fontWeight: '600',
+    fontSize: 16,
+  },
   termsText: {
-    fontSize: 12,
-    color: '#6b7280',
+    fontSize: 13,
+    color: '#64748b',
     textAlign: 'center',
-    marginTop: 32,
+    marginTop: 8,
     paddingHorizontal: 16,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   linkText: {
-    color: '#2563eb',
+    color: '#3b82f6',
+    fontWeight: '500',
   },
 });
 

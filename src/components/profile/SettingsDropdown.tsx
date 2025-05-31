@@ -7,7 +7,6 @@ import { useDispatch } from "react-redux";
 import { logoutUser } from "@/redux/slices/userSlice";
 import { AppDispatch } from "@/redux/store";
 import { useTheme } from "@/hooks/useTheme";
-import { router } from 'expo-router';
 
 interface SettingsDropdownProps {
   variant?: "icon" | "text";
@@ -16,12 +15,16 @@ interface SettingsDropdownProps {
 const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
   const { theme, setTheme } = useTheme();
   const dispatch = useDispatch<AppDispatch>();
+  const navigation = useNavigation();
   const [isVisible, setIsVisible] = useState(false);
 
   const handleLogout = () => {
     dispatch(logoutUser());
     setIsVisible(false);
-    router.replace('/login');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
   };
 
   const toggleTheme = () => {
@@ -31,7 +34,7 @@ const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
 
   const handleNavigation = (path: string) => {
     setIsVisible(false);
-    router.push(path);
+    navigation.navigate(path);
   };
 
   const MenuItem = ({ 
@@ -118,37 +121,37 @@ const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
               <MenuItem
                 iconName="person-outline"
                 title="Profile"
-                onPress={() => handleNavigation('/profile')}
+                onPress={() => handleNavigation('Profile')}
               />
               
               <MenuItem
                 iconName="bookmark-outline"
                 title="Saved Posts"
-                onPress={() => handleNavigation('/saved-posts')}
+                onPress={() => handleNavigation('SavedPosts')}
               />
               
               <MenuItem
                 iconName="settings-outline"
                 title="Account Settings"
-                onPress={() => handleNavigation('/settings?tab=account')}
+                onPress={() => handleNavigation('Settings')}
               />
               
               <MenuItem
                 iconName="eye-outline"
                 title="Privacy"
-                onPress={() => handleNavigation('/settings?tab=privacy')}
+                onPress={() => handleNavigation('Settings')}
               />
               
               <MenuItem
                 iconName="notifications-outline"
                 title="Notifications"
-                onPress={() => handleNavigation('/settings?tab=notifications')}
+                onPress={() => handleNavigation('Settings')}
               />
               
               <MenuItem
                 iconName="person-add-outline"
                 title="Follow Requests"
-                onPress={() => handleNavigation('/follow-requests')}
+                onPress={() => handleNavigation('FollowRequests')}
               />
             </View>
 
@@ -174,13 +177,13 @@ const SettingsDropdown = ({ variant = "icon" }: SettingsDropdownProps) => {
               <MenuItem
                 iconName="help-circle-outline"
                 title="Help & Support"
-                onPress={() => handleNavigation('/help')}
+                onPress={() => handleNavigation('Help')}
               />
               
               <MenuItem
                 iconName="shield-outline"
                 title="Security"
-                onPress={() => handleNavigation('/settings?tab=security')}
+                onPress={() => handleNavigation('Settings')}
               />
             </View>
 

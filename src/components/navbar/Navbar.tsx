@@ -1,19 +1,19 @@
 // src/components/navbar/Navbar.tsx (This would be used in the navigation header)
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRoute } from '@react-navigation/native';;
 import { Button } from '@/components/ui/button';
 import SearchComponent from '@/components/search/SearchComponent';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 
 const Navbar = () => {
-  const router = useRouter();
+  const navigation = useNavigation();
   const isAuthenticated = useSelector((state: RootState) => state.user.isAuthenticated);
 
   return (
     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-      <TouchableOpacity onPress={() => router.push('/')}>
+      <TouchableOpacity onPress={() => navigation.push('/')}>
         <Text className="text-xl font-bold">PoliticalApp</Text>
       </TouchableOpacity>
       
@@ -24,15 +24,15 @@ const Navbar = () => {
       <View className="flex-row items-center space-x-2">
         {isAuthenticated ? (
           <>
-            <Button variant="ghost" onPress={() => router.push('/feed')}>
+            <Button variant="ghost" onPress={() => navigation.navigate('feed')}>
               <Text>Feed</Text>
             </Button>
-            <Button variant="ghost" onPress={() => router.push('/profile')}>
+            <Button variant="ghost" onPress={() => navigation.navigate('profile')}>
               <Text>Profile</Text>
             </Button>
           </>
         ) : (
-          <Button onPress={() => router.push('/login')}>
+          <Button onPress={() => navigation.navigate('login')}>
             <Text>Login</Text>
           </Button>
         )}
