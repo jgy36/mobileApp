@@ -1,10 +1,10 @@
+// src/components/feed/SaveButton.tsx - FIXED version
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useNavigation, useRoute } from '@react-navigation/native';;
+import { useNavigation } from '@react-navigation/native';
 import { savePost, checkPostSaveStatus } from '@/api/posts';
 
 interface SaveButtonProps {
@@ -43,7 +43,7 @@ const SaveButton = ({ postId, isSaved: initialIsSaved }: SaveButtonProps) => {
     setIsLoading(true);
     
     if (!user.token) {
-      navigation.navigate('login');
+      (navigation as any).navigate('Login');
       setIsLoading(false);
       return;
     }
@@ -70,14 +70,17 @@ const SaveButton = ({ postId, isSaved: initialIsSaved }: SaveButtonProps) => {
       disabled={isLoading}
       className="flex-row items-center"
     >
-      <Bookmark 
+      <MaterialIcons 
+        name={saved ? "bookmark" : "bookmark-border"}
         size={20} 
-        color={saved ? "#eab308" : "gray"}
-        fill={saved ? "#eab308" : "transparent"}
+        color={saved ? "#eab308" : "#6B7280"}
       />
-      <Text className="ml-1 text-gray-600 dark:text-gray-400">
-        {isLoading ? "Saving..." : saved ? "Saved" : "Save"}
+      {/* Optional: Show text label */}
+      {/*
+      <Text className="ml-1 text-gray-600 dark:text-gray-400 text-sm">
+        {isLoading ? "..." : saved ? "Saved" : "Save"}
       </Text>
+      */}
     </TouchableOpacity>
   );
 };

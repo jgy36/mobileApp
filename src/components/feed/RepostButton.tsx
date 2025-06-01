@@ -1,10 +1,10 @@
+// src/components/feed/RepostButton.tsx - FIXED version
 import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
-
 import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
-import { useNavigation, useRoute } from '@react-navigation/native';;
+import { useNavigation } from '@react-navigation/native';
 import { useCreatePost } from '@/hooks/useApi';
 
 interface RepostButtonProps {
@@ -27,9 +27,9 @@ const RepostButton = ({
   const navigation = useNavigation();
   const { execute: createPost } = useCreatePost();
 
-  const handleOpenRepost = (e: React.EventObject) => {
+  const handleOpenRepost = () => {
     if (!user.token) {
-      navigation.push(`/login`);
+      (navigation as any).navigate('Login');
       return;
     }
 
@@ -83,9 +83,9 @@ const RepostButton = ({
         onPress={handleOpenRepost}
         className="flex-row items-center"
       >
-        <Repeat size={20} color="#22c55e" />
-        <Text className="ml-1 text-gray-600 dark:text-gray-400">
-          {repostsCount > 0 ? repostsCount : "Repost"}
+        <MaterialIcons name="repeat" size={20} color="#22c55e" />
+        <Text className="ml-1 text-gray-600 dark:text-gray-400 text-sm">
+          {repostsCount > 0 ? repostsCount : ""}
         </Text>
       </TouchableOpacity>
 
@@ -106,14 +106,14 @@ const RepostButton = ({
                 Repost this content
               </Text>
               <TouchableOpacity onPress={() => setIsOpen(false)} className="p-2">
-                <MaterialIcons name="close" size={24} color="gray" />
+                <MaterialIcons name="close" size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
 
             {/* Original post preview */}
             <View className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 mb-4">
               <View className="flex-row items-center mb-2">
-                <View className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
+                <View className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 items-center justify-center">
                   <Text className="text-white text-xs font-semibold">
                     {author.charAt(0).toUpperCase()}
                   </Text>
@@ -136,14 +136,15 @@ const RepostButton = ({
               textAlignVertical="top"
               className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 h-24 text-gray-900 dark:text-white"
               style={{ fontFamily: 'System' }}
+              placeholderTextColor="#9CA3AF"
             />
 
             {/* Action buttons */}
-            <View className="flex-row space-x-3 mt-4">
+            <View className="flex-row mt-4">
               <TouchableOpacity
                 onPress={() => setIsOpen(false)}
                 disabled={isReposting}
-                className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-4 items-center"
+                className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-4 items-center mr-2"
               >
                 <Text className="text-gray-700 dark:text-gray-300 font-semibold">
                   Cancel
@@ -153,7 +154,7 @@ const RepostButton = ({
               <TouchableOpacity
                 onPress={handleRepost}
                 disabled={isReposting}
-                className="flex-1 bg-blue-500 dark:bg-blue-600 rounded-lg p-4 items-center"
+                className="flex-1 bg-blue-500 dark:bg-blue-600 rounded-lg p-4 items-center ml-2"
               >
                 {isReposting ? (
                   <View className="flex-row items-center">
@@ -161,7 +162,7 @@ const RepostButton = ({
                   </View>
                 ) : (
                   <View className="flex-row items-center">
-                    <Repeat size={16} color="white" />
+                    <MaterialIcons name="repeat" size={16} color="white" />
                     <Text className="text-white font-semibold ml-2">Repost</Text>
                   </View>
                 )}

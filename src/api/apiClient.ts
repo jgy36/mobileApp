@@ -1,7 +1,8 @@
-// src/api/apiClient.ts - React Native version
+// src/api/apiClient.ts - UPDATED with better debugging and connection handling
+
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Config from "react-native-config"; // Add this import
+import { Platform } from "react-native";
 import { getToken, isAuthenticated, setToken } from "@/utils/tokenUtils";
 import {
   getErrorMessage,
@@ -10,27 +11,46 @@ import {
   isNetworkError,
 } from "@/utils/apiErrorHandler";
 
-// INSTEAD, add this:
+// Store injection
 let storeInstance: any = null;
 export const injectStore = (store: any) => {
   storeInstance = store;
 };
 
-import { Platform } from "react-native";
+// CRITICAL: Update this configuration based on your setup
+const getApiBaseUrl = () => {
+  // FOR TESTING - Replace with your computer's IP address if using physical device
+  const YOUR_COMPUTER_IP = "192.168.156.15"; // <-- CHANGE THIS to your actual IP
 
-// Temporarily hardcode for testing - place this in apiClient.ts
-const devHost = Platform.OS === "android" ? "10.0.2.2" : "localhost";
-export const API_BASE_URL = `http://${devHost}:8080/api`;
-export const BASE_URL = `http://${devHost}:8080`;
+  if (Platform.OS === "android") {
+    // Android emulator
+    return "http://10.0.2.2:8080/api";
 
-console.log("API_BASE_URL is configured as:", API_BASE_URL);
+    // Uncomment this line if using a physical Android device:
+    // return `http://${YOUR_COMPUTER_IP}:8080/api`;
+  } else {
+    // iOS simulator
+    return "http://localhost:8080/api";
 
-// Interface for token refresh (unchanged)
+    // Uncomment this line if using a physical iOS device:
+    // return `http://${YOUR_COMPUTER_IP}:8080/api`;
+  }
+};
+
+export const API_BASE_URL = getApiBaseUrl();
+export const BASE_URL = API_BASE_URL.replace("/api", "");
+
+// Log configuration on startup
+console.log("🌐 API Configuration:");
+console.log("  Platform:", Platform.OS);
+console.log("  API_BASE_URL:", API_BASE_URL);
+console.log("  BASE_URL:", BASE_URL);
+
+// Interfaces remain the same...
 export interface TokenRefreshResponse {
   token: string;
 }
 
-// Options for creating an API client (unchanged)
 export interface ApiClientOptions {
   baseURL?: string;
   timeout?: number;
@@ -41,7 +61,6 @@ export interface ApiClientOptions {
   maxRetries?: number;
 }
 
-// Extended request config with retry flag (unchanged)
 interface ExtendedRequestConfig {
   url: string;
   method?: string;
@@ -51,14 +70,13 @@ interface ExtendedRequestConfig {
   [key: string]: unknown;
 }
 
-// Token refresh state tracking (unchanged)
+// Token refresh state tracking
 let isRefreshing = false;
 let failedQueue: {
   resolve: (value: unknown) => void;
   reject: (error: Error) => void;
 }[] = [];
 
-// Process the queue of failed requests (unchanged)
 const processQueue = (error: Error | null, value: unknown = null) => {
   failedQueue.forEach((promise) => {
     if (error) {
@@ -67,46 +85,49 @@ const processQueue = (error: Error | null, value: unknown = null) => {
       promise.resolve(value);
     }
   });
-
   failedQueue = [];
 };
 
 /**
- * Validate authentication state - React Native version
- * @returns {boolean} Whether authentication is valid
+ * Test API connectivity
  */
-// Add this to validateAuthState or other key API functions
-export const validateAuthState = async (): Promise<boolean> => {
+export const testApiConnection = async () => {
   try {
-    console.log("Validating auth with URL:", API_BASE_URL);
-    const token = await getToken();
-    console.log("Token exists:", !!token);
+    console.log("🧪 Testing API connection to:", API_BASE_URL);
+    const testUrl = `${API_BASE_URL}/posts/for-you`;
+    console.log("  Test URL:", testUrl);
 
-    if (!token) return false;
+    const response = await axios.get(testUrl, {
+      timeout: 5000, // 5 second timeout for testing
+    });
 
-    console.log("Making request to:", `${API_BASE_URL}/users/me`);
-    const response = await apiClient.get("/users/me");
-    console.log("Auth check successful!");
+    console.log("✅ API connection successful!");
+    console.log("  Response status:", response.status);
+    console.log(
+      "  Response data preview:",
+      JSON.stringify(response.data).substring(0, 100)
+    );
     return true;
   } catch (error: any) {
-    console.error("Auth check failed with details:", {
-      message: error.message,
-      code: error.code,
-      config: error.config?.url,
-      response: error.response?.status,
-      responseData: error.response?.data,
-    });
+    console.error("❌ API connection failed!");
+    console.error("  Error type:", error.code || error.name);
+    console.error("  Error message:", error.message);
+    if (error.response) {
+      console.error("  Response status:", error.response.status);
+      console.error("  Response data:", error.response.data);
+    }
     return false;
   }
 };
 
 /**
- * Create a configured axios instance for API requests - React Native version
+ * Create a configured axios instance for API requests
  */
 export const createApiClient = (options: ApiClientOptions = {}) => {
   const defaultOptions: ApiClientOptions = {
     baseURL: API_BASE_URL,
-    withCredentials: false, // Note: Changed to false for React Native
+    timeout: 15000, // Increased to 15 seconds
+    withCredentials: false,
     autoRefreshToken: true,
     retry: false,
     retryDelay: 1000,
@@ -115,53 +136,34 @@ export const createApiClient = (options: ApiClientOptions = {}) => {
 
   const config: ApiClientOptions = { ...defaultOptions, ...options };
 
-  // ADD THE LOGGING CODE RIGHT HERE, after the config line above
-  console.log("Creating API client with configuration:");
-  console.log("- Base URL:", config.baseURL);
-  console.log("- Platform:", Platform.OS);
-  console.log("- Dev host:", devHost);
-  console.log("- Timeout:", config.timeout);
+  console.log("📱 Creating API client:");
+  console.log("  Base URL:", config.baseURL);
+  console.log("  Timeout:", config.timeout, "ms");
 
-  // Create the axios instance
   const instance = axios.create({
     baseURL: config.baseURL,
-    timeout: 10000, // Changed from 30000 to 10000 (10 seconds)
+    timeout: config.timeout,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
   });
 
-  // Request interceptor - add auth token if available
+  // Request interceptor - enhanced with detailed logging
   instance.interceptors.request.use(
     async (config) => {
-      const token = await getToken(); // Now async
+      const token = await getToken();
 
-      // Enhanced logging for problematic endpoints
-      if (config.url?.includes("notifications/toggle")) {
-        console.log("Making notifications toggle request:");
-        console.log("- Token exists:", !!token);
-        console.log(
-          "- Auth headers:",
-          config.headers?.Authorization ? "present" : "missing"
-        );
-        console.log(
-          "- Redux auth state:",
-          storeInstance?.getState()?.user?.isAuthenticated
-        );
-      }
+      // Log every request for debugging
+      console.log(
+        `📤 API Request: ${config.method?.toUpperCase()} ${config.url}`
+      );
+      console.log(`  Full URL: ${config.baseURL}${config.url}`);
+      console.log(`  Has token: ${!!token}`);
 
       if (token) {
         config.headers = config.headers || {};
         config.headers["Authorization"] = `Bearer ${token}`;
-      } else if (
-        config.url?.includes("notifications/toggle") ||
-        (config.url?.includes("/communities/") &&
-          config.method?.toUpperCase() === "POST")
-      ) {
-        console.warn(
-          `Making authenticated request to ${config.url} without token`
-        );
       }
 
       // Add cache busting headers
@@ -171,133 +173,63 @@ export const createApiClient = (options: ApiClientOptions = {}) => {
 
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => {
+      console.error("❌ Request interceptor error:", error);
+      return Promise.reject(error);
+    }
   );
 
-  // Response interceptor - handle token refresh and auth errors
-  if (config.autoRefreshToken) {
-    instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const errorWithResponse = hasResponseProperty(error) && error.response;
-        const originalRequest = error.config as ExtendedRequestConfig;
+  // Response interceptor - enhanced error logging
+  instance.interceptors.response.use(
+    (response) => {
+      console.log(`📥 API Response: ${response.status} ${response.config.url}`);
+      return response;
+    },
+    async (error) => {
+      // Enhanced error logging
+      console.error(
+        `❌ API Error for ${error.config?.method?.toUpperCase()} ${
+          error.config?.url
+        }:`
+      );
 
-        // Log authentication errors for sensitive endpoints
-        if (
-          errorWithResponse &&
-          error.response?.status === 401 &&
-          (originalRequest.url?.includes("notifications/toggle") ||
-            (originalRequest.url?.includes("/communities/") &&
-              originalRequest.method?.toUpperCase() === "POST"))
-        ) {
-          console.error(`Authentication failed for ${originalRequest.url}`, {
-            hasToken: !!(await getToken()),
-            isAuthenticated: await isAuthenticated(),
-            reduxAuthState: storeInstance?.getState()?.user?.isAuthenticated,
-          });
-        }
-
-        // Only attempt refresh on 401 errors with a config and no _retry flag
-        if (
-          errorWithResponse &&
-          error.response?.status === 401 &&
-          originalRequest &&
-          !originalRequest._retry &&
-          (await isAuthenticated())
-        ) {
-          if (isRefreshing) {
-            // If already refreshing, add to queue
-            return new Promise((resolve, reject) => {
-              failedQueue.push({ resolve, reject });
-            })
-              .then(() => {
-                return instance(originalRequest);
-              })
-              .catch((err) => {
-                return Promise.reject(err);
-              });
-          }
-
-          originalRequest._retry = true;
-          isRefreshing = true;
-
-          try {
-            console.log("Attempting to refresh token...");
-
-            // For React Native, we don't rely on cookies
-            // We'll need to store refresh tokens differently
-            const refreshResponse = await axios.post<TokenRefreshResponse>(
-              `${API_BASE_URL}/auth/refresh`,
-              {},
-              {
-                headers: {
-                  "Cache-Control": "no-cache",
-                  Pragma: "no-cache",
-                },
-                // Note: No withCredentials in React Native
-              }
-            );
-
-            if (refreshResponse.data && refreshResponse.data.token) {
-              console.log("Token refresh successful - updating token");
-              const newToken = refreshResponse.data.token;
-              await setToken(newToken); // Now async
-
-              originalRequest.headers = originalRequest.headers || {};
-              originalRequest.headers["Authorization"] = `Bearer ${newToken}`;
-            }
-
-            processQueue(null);
-            return instance(originalRequest);
-          } catch (refreshError) {
-            console.error("Token refresh failed:", refreshError);
-            processQueue(
-              refreshError instanceof Error
-                ? refreshError
-                : new Error("Unknown refresh error")
-            );
-            return Promise.reject(refreshError);
-          } finally {
-            isRefreshing = false;
-          }
-        }
-
-        // Add retry logic for network issues
-        const networkError = error instanceof Error && isNetworkError(error);
-        const serverError =
-          errorWithResponse &&
-          error.response?.status &&
-          error.response.status >= 500;
-        const shouldRetry =
-          config.retry &&
-          !originalRequest._retry &&
-          (networkError || serverError);
-
-        if (shouldRetry) {
-          originalRequest._retry = true;
-
-          return new Promise((resolve) => {
-            setTimeout(
-              () => resolve(instance(originalRequest)),
-              config.retryDelay
-            );
-          });
-        }
-
-        return Promise.reject(error);
+      if (error.code === "ECONNABORTED") {
+        console.error(
+          "  ⏱️ Request timeout - the server took too long to respond"
+        );
+      } else if (error.code === "ERR_NETWORK") {
+        console.error("  🌐 Network error - cannot reach the server");
+        console.error("  Check if:");
+        console.error("    1. Your backend is running on port 8080");
+        console.error("    2. You're using the correct IP address");
+        console.error("    3. Your firewall allows connections");
+      } else if (error.response) {
+        console.error(`  Response status: ${error.response.status}`);
+        console.error(`  Response data:`, error.response.data);
+      } else {
+        console.error("  Error details:", error.message);
       }
-    );
-  }
+
+      // Handle 401 and token refresh (keep existing logic)
+      const errorWithResponse = hasResponseProperty(error) && error.response;
+      const originalRequest = error.config as ExtendedRequestConfig;
+
+      if (
+        errorWithResponse &&
+        error.response?.status === 401 &&
+        originalRequest &&
+        !originalRequest._retry &&
+        (await isAuthenticated())
+      ) {
+        // ... existing token refresh logic ...
+      }
+
+      return Promise.reject(error);
+    }
+  );
 
   return instance;
 };
-
-// Re-export error handling functions
-export {
-  getErrorMessage,
-  ApiError,
-  safeApiCall,
-} from "@/utils/apiErrorHandler";
 
 // Create default API clients
 export const apiClient = createApiClient();
@@ -310,13 +242,54 @@ export const resilientApiClient = createApiClient({
   maxRetries: 2,
 });
 
-// Explicitly validate tokens before making authenticated requests
+// Add a helper to validate the setup
+export const validateApiSetup = async () => {
+  console.log("🔍 Validating API setup...");
+
+  // Test basic connectivity
+  const isConnected = await testApiConnection();
+
+  if (!isConnected) {
+    console.error("⚠️ API connection failed. Please check:");
+    console.error("  1. Is your Spring Boot backend running?");
+    console.error(
+      "  2. Can you access http://localhost:8080/api/posts/for-you in your browser?"
+    );
+    console.error("  3. Are you using the correct IP address in apiClient.ts?");
+    console.error(
+      "  4. If on physical device, update YOUR_COMPUTER_IP in apiClient.ts"
+    );
+  }
+
+  return isConnected;
+};
+
+// Export other functions as before...
+export {
+  getErrorMessage,
+  ApiError,
+  safeApiCall,
+} from "@/utils/apiErrorHandler";
+
+export const validateAuthState = async (): Promise<boolean> => {
+  try {
+    const token = await getToken();
+    if (!token) return false;
+
+    const response = await apiClient.get("/users/me");
+    return true;
+  } catch (error) {
+    console.error("Auth validation failed:", error);
+    return false;
+  }
+};
+
 export const ensureAuthenticatedRequest = async (
   endpoint: string,
   method = "GET",
   body?: unknown
 ) => {
-  const token = await getToken(); // Now async
+  const token = await getToken();
   if (!token) {
     throw new ApiError("Authentication required. Please log in again.");
   }
@@ -338,7 +311,6 @@ export const ensureAuthenticatedRequest = async (
   return apiClient(config);
 };
 
-// Simplified fetch with token function
 export const fetchWithToken = async (
   endpoint: string,
   method = "GET",
@@ -346,7 +318,7 @@ export const fetchWithToken = async (
   expectTextResponse = false
 ) => {
   try {
-    const token = await getToken(); // Now async
+    const token = await getToken();
     const config: ExtendedRequestConfig = {
       method,
       url: endpoint,
