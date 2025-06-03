@@ -106,4 +106,6 @@ __generated__/
 .watchmanconfig
 
 # App specific ignores (if any)
-# Add any app-specific files you want to ignore here
+# Add any app-specific files you want to ignore here.env*
+.env.development
+.env.production
