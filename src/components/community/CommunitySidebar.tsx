@@ -1,11 +1,18 @@
 // src/components/community/CommunitySidebar.tsx
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  FlatList,
+} from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
 import { toggleSidebar } from "@/redux/slices/communitySlice";
-import { Users, ChevronLeft, ChevronRight, Home, Plus } from "react-native-vector-icons/Feather";
+import { Feather } from "@expo/vector-icons";
 import { getAllCommunities } from "@/api/communities";
 
 interface Community {
@@ -18,8 +25,8 @@ const CommunitySidebar = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation<any>(); // Fix navigation typing
+  const route = useRoute<any>(); // Fix route typing
   const dispatch = useDispatch<AppDispatch>();
 
   const isAuthenticated = useSelector((state: RootState) => !!state.user.token);
@@ -30,6 +37,7 @@ const CommunitySidebar = () => {
     (state: RootState) => state.communities.isSidebarOpen
   );
 
+  // Fix route params access
   const activeRouteId = route.params?.id as string;
 
   // Get user role
@@ -39,7 +47,7 @@ const CommunitySidebar = () => {
   // Handle create button
   const handleCreateButtonPress = () => {
     if (isAdmin) {
-      navigation.navigate('CreateCommunity');
+      navigation.navigate("CreateCommunity");
     } else {
       Alert.alert(
         "Permission Denied",
@@ -93,7 +101,7 @@ const CommunitySidebar = () => {
   // Navigate to community
   const navigateToCommunity = (communityId: string) => {
     console.log(`Sidebar navigating to community: ${communityId}`);
-    navigation.navigate('Community', { id: communityId });
+    navigation.navigate("Community", { id: communityId });
   };
 
   if (!isAuthenticated || joinedCommunityIds.length === 0) {
@@ -112,10 +120,12 @@ const CommunitySidebar = () => {
     >
       <View
         className="w-4 h-4 rounded-full mr-3"
-        style={{ backgroundColor: item.color || "var(--primary)" }}
+        style={{ backgroundColor: item.color || "#3B82F6" }}
       />
       {isSidebarOpen ? (
-        <Text className="text-gray-900 dark:text-white truncate">{item.name}</Text>
+        <Text className="text-gray-900 dark:text-white truncate">
+          {item.name}
+        </Text>
       ) : (
         <View className="w-6 h-6 rounded-full items-center justify-center bg-gray-200 dark:bg-gray-700">
           <Text className="text-xs font-medium text-gray-700 dark:text-gray-300">
@@ -127,7 +137,7 @@ const CommunitySidebar = () => {
   );
 
   return (
-    <View 
+    <View
       className={`absolute left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 z-20 ${
         isSidebarOpen ? "w-64" : "w-16"
       }`}
@@ -140,23 +150,23 @@ const CommunitySidebar = () => {
           className="self-end mb-4 p-1"
         >
           {isSidebarOpen ? (
-            <ChevronLeft name="chevron-left" size={18} color="gray" />
+            <Feather name="chevron-left" size={18} color="gray" />
           ) : (
-            <ChevronRight name="chevron-right" size={18} color="gray" />
+            <Feather name="chevron-right" size={18} color="gray" />
           )}
         </TouchableOpacity>
 
         {/* Home link */}
         <TouchableOpacity
-          onPress={() => navigation.navigate('Feed')}
+          onPress={() => navigation.navigate("Feed")}
           className={`w-full flex-row items-center p-2 rounded-md mb-4 ${
-            route.name === "Feed"
-              ? "bg-gray-100 dark:bg-gray-800"
-              : ""
+            route.name === "Feed" ? "bg-gray-100 dark:bg-gray-800" : ""
           }`}
         >
-          <Home name="home" size={16} color="gray" className="mr-2" />
-          {isSidebarOpen && <Text className="text-gray-900 dark:text-white">Home</Text>}
+          <Feather name="home" size={16} color="gray" />
+          {isSidebarOpen && (
+            <Text className="text-gray-900 dark:text-white ml-2">Home</Text>
+          )}
         </TouchableOpacity>
 
         {/* Communities label */}
@@ -184,12 +194,14 @@ const CommunitySidebar = () => {
 
         {/* All communities button */}
         <TouchableOpacity
-          onPress={() => navigation.navigate('Communities')}
+          onPress={() => navigation.navigate("Communities")}
           className="w-full flex-row items-center p-2 border border-gray-300 dark:border-gray-600 rounded-md mt-4"
         >
-          <Users name="users" size={16} color="gray" className="mr-2" />
+          <Feather name="users" size={16} color="gray" />
           {isSidebarOpen && (
-            <Text className="text-gray-900 dark:text-white">All Communities</Text>
+            <Text className="text-gray-900 dark:text-white ml-2">
+              All Communities
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -199,9 +211,9 @@ const CommunitySidebar = () => {
             onPress={handleCreateButtonPress}
             className="w-full flex-row items-center p-2 bg-blue-500 dark:bg-blue-600 rounded-md mt-2"
           >
-            <Plus name="plus" size={16} color="white" className="mr-2" />
+            <Feather name="plus" size={16} color="white" />
             {isSidebarOpen && (
-              <Text className="text-white">Create Community</Text>
+              <Text className="text-white ml-2">Create Community</Text>
             )}
           </TouchableOpacity>
         )}

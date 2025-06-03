@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { PostType } from "@/types/post";
 import { getPostById } from "@/api/posts";
-import { Heart, MessageCircle } from "react-native-vector-icons/Feather";
+import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AuthorAvatar from "@/components/shared/AuthorAvatar";
 import { apiClient } from "@/api/apiClient";
@@ -16,31 +16,41 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
   const [originalPost, setOriginalPost] = useState<PostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>(); // Fix navigation typing
 
   // Direct API fetch function with improved error handling
   const directFetchPost = async (id: number): Promise<PostType | null> => {
     try {
       console.log(`NestedOriginalPost - Direct API call to fetch post ${id}`);
-      
+
       // Make sure we add a cache-busting parameter to avoid cached responses
       const timestamp = new Date().getTime();
       const response = await apiClient.get(`/posts/${id}?t=${timestamp}`, {
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
-      
+
       console.log("NestedOriginalPost - Direct API response:", response.data);
-      
+
       // Validate the response data
       if (!response.data || !response.data.id) {
-        console.error("NestedOriginalPost - Invalid response data:", response.data);
+        console.error(
+          "NestedOriginalPost - Invalid response data:",
+          response.data
+        );
         return null;
       }
-      
-      return response.data;
+
+      // Ensure proper type structure
+      const postData: PostType = {
+        ...response.data,
+        commentsCount: response.data.commentsCount || 0,
+        likes: response.data.likes || 0,
+      };
+
+      return postData;
     } catch (err) {
       console.error("NestedOriginalPost - Direct API error:", err);
       return null;
@@ -49,8 +59,10 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
 
   useEffect(() => {
     // Log when the component mounts with the postId
-    console.log(`NestedOriginalPost - Component mounted with postId: ${postId}, type: ${typeof postId}`);
-    
+    console.log(
+      `NestedOriginalPost - Component mounted with postId: ${postId}, type: ${typeof postId}`
+    );
+
     // Validate postId - enhanced validation logic
     if (!postId || isNaN(Number(postId)) || postId <= 0) {
       console.error(`NestedOriginalPost - Invalid postId: ${postId}`);
@@ -60,33 +72,61 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
     }
 
     const fetchOriginalPost = async () => {
-      console.log(`NestedOriginalPost - Starting to fetch original post with ID: ${postId}`);
+      console.log(
+        `NestedOriginalPost - Starting to fetch original post with ID: ${postId}`
+      );
       setLoading(true);
       setError(null);
-      
+
       try {
         // Try standard API call first with more detailed logging
         console.log("NestedOriginalPost - Attempting standard API call");
-        let post = await getPostById(Number(postId));
-        
+        let rawPost = await getPostById(Number(postId));
+
+        // Convert to PostType if we got data
+        let post: PostType | null = null;
+        if (rawPost) {
+          post = {
+            ...rawPost,
+            commentsCount:
+              typeof rawPost.commentsCount === "number"
+                ? rawPost.commentsCount
+                : 0,
+            likes: typeof rawPost.likes === "number" ? rawPost.likes : 0,
+          } as PostType;
+        }
+
         // If that fails, try direct API call as fallback
         if (!post) {
-          console.log("NestedOriginalPost - Standard API call failed, trying direct fetch");
+          console.log(
+            "NestedOriginalPost - Standard API call failed, trying direct fetch"
+          );
           post = await directFetchPost(Number(postId));
         }
 
         console.log("NestedOriginalPost - Fetch result:", post);
-        
+
         if (post) {
           setOriginalPost(post);
-          console.log("NestedOriginalPost - Successfully set original post data");
+          console.log(
+            "NestedOriginalPost - Successfully set original post data"
+          );
         } else {
-          console.error(`NestedOriginalPost - Could not fetch original post with ID: ${postId}`);
+          console.error(
+            `NestedOriginalPost - Could not fetch original post with ID: ${postId}`
+          );
           throw new Error("Failed to retrieve original post");
         }
       } catch (err) {
-        console.error(`NestedOriginalPost - Error fetching post ${postId}:`, err);
-        setError(`Could not load the original post: ${err instanceof Error ? err.message : String(err)}`);
+        console.error(
+          `NestedOriginalPost - Error fetching post ${postId}:`,
+          err
+        );
+        setError(
+          `Could not load the original post: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        );
       } finally {
         setLoading(false);
       }
@@ -106,7 +146,7 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
             <View className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
           </View>
         </View>
-        <ActivityIndicator size="small" color="gray" className="mt-2" />
+        <ActivityIndicator size="small" color="gray" style={{ marginTop: 8 }} />
       </View>
     );
   }
@@ -141,11 +181,11 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
       : "";
 
   const handleAuthorPress = () => {
-    navigation.navigate('Profile', { username: authorName });
+    navigation.navigate("Profile", { username: authorName });
   };
 
   const handlePostPress = () => {
-    navigation.navigate('PostDetail', { postId: originalPost.id });
+    navigation.navigate("PostDetail", { postId: originalPost.id });
   };
 
   // Finally, render the original post in nested format
@@ -157,10 +197,7 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
     >
       <View className="flex-row items-center gap-2 mb-2">
         <TouchableOpacity onPress={handleAuthorPress}>
-          <AuthorAvatar
-            username={authorName}
-            size={20}
-          />
+          <AuthorAvatar username={authorName} size={20} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleAuthorPress}>
           <Text className="font-medium text-gray-900 dark:text-white">
@@ -173,12 +210,16 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
       {/* Simplified stats from original post */}
       <View className="flex-row items-center gap-4 mt-2">
         <View className="flex-row items-center gap-1">
-          <Heart name="heart" size={12} color="gray" />
-          <Text className="text-xs text-gray-500 dark:text-gray-400">{originalPost.likes || 0}</Text>
+          <Feather name="heart" size={12} color="gray" />
+          <Text className="text-xs text-gray-500 dark:text-gray-400">
+            {originalPost.likes || 0}
+          </Text>
         </View>
         <View className="flex-row items-center gap-1">
-          <MessageCircle name="message-circle" size={12} color="gray" />
-          <Text className="text-xs text-gray-500 dark:text-gray-400">{originalPost.commentsCount || 0}</Text>
+          <Feather name="message-circle" size={12} color="gray" />
+          <Text className="text-xs text-gray-500 dark:text-gray-400">
+            {originalPost.commentsCount || 0}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

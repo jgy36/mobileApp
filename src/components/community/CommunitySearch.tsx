@@ -1,7 +1,7 @@
 // src/components/community/CommunitySearch.tsx
 import { useState } from "react";
 import { View, Text, TouchableOpacity, TextInput, Alert } from "react-native";
-import { Search, Plus } from "react-native-vector-icons/Feather";
+import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -12,8 +12,8 @@ interface CommunitySearchProps {
 
 const CommunitySearch = ({ onSearch }: CommunitySearchProps) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const navigation = useNavigation();
-  
+  const navigation = useNavigation<any>(); // Fix navigation typing
+
   // Get user role from Redux state
   const user = useSelector((state: RootState) => state.user);
   const isAdmin = user.role === "ADMIN";
@@ -26,7 +26,7 @@ const CommunitySearch = ({ onSearch }: CommunitySearchProps) => {
   const handleCreateButtonPress = () => {
     if (isAdmin) {
       // If admin, navigate to create page
-      navigation.navigate('CreateCommunity');
+      navigation.navigate("CreateCommunity");
     } else {
       // If not admin, show alert
       Alert.alert(
@@ -46,7 +46,7 @@ const CommunitySearch = ({ onSearch }: CommunitySearchProps) => {
       <View className="flex-row gap-2">
         <View className="relative flex-1 min-w-[200px]">
           <View className="absolute left-2 top-3 z-10">
-            <Search name="search" size={16} color="gray" />
+            <Feather name="search" size={16} color="gray" />
           </View>
           <TextInput
             placeholder="Search communities"
@@ -60,8 +60,13 @@ const CommunitySearch = ({ onSearch }: CommunitySearchProps) => {
           onPress={handleCreateButtonPress}
           className="flex-row items-center bg-blue-500 dark:bg-blue-600 px-3 py-2 rounded-md"
         >
-          <Plus name="plus" size={16} color="white" className="mr-2" />
-          <Text className="text-white font-medium hidden sm:block">Create</Text>
+          <Feather
+            name="plus"
+            size={16}
+            color="white"
+            style={{ marginRight: 8 }}
+          />
+          <Text className="text-white font-medium">Create</Text>
         </TouchableOpacity>
       </View>
     </View>

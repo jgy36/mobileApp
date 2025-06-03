@@ -30,7 +30,7 @@ const getApiBaseUrl = () => {
     // return `http://${YOUR_COMPUTER_IP}:8080/api`;
   } else {
     // iOS simulator
-    return "http://localhost:8080/api";
+    return "http://192.168.137.1:8080/api";
 
     // Uncomment this line if using a physical iOS device:
     // return `http://${YOUR_COMPUTER_IP}:8080/api`;
@@ -253,7 +253,7 @@ export const validateApiSetup = async () => {
     console.error("⚠️ API connection failed. Please check:");
     console.error("  1. Is your Spring Boot backend running?");
     console.error(
-      "  2. Can you access http://localhost:8080/api/posts/for-you in your browser?"
+      "  2. Can you access http://192.168.137.1:8080/api/posts/for-you in your browser?"
     );
     console.error("  3. Are you using the correct IP address in apiClient.ts?");
     console.error(

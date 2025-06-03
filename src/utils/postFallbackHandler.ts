@@ -1,5 +1,5 @@
 // src/utils/postFallbackHandler.ts - React Native version
-import axios from 'axios';
+import axios from "axios";
 import { PostType } from "@/types/post";
 
 /**
@@ -16,7 +16,7 @@ export const fetchPostsWithFallback = async (
       ? endpoint
       : `/${endpoint}`;
     const API_BASE_URL =
-      process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+      process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
     try {
       // Use axios directly for React Native

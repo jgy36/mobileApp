@@ -6,7 +6,7 @@ export type RootStackParamList = {
   Register: undefined;
   VerifyEmail: undefined;
   Verify: { token: string };
-  
+
   // Main tab screens
   MainTabs: undefined;
   Feed: undefined;
@@ -14,42 +14,43 @@ export type RootStackParamList = {
   Map: undefined;
   Messages: undefined;
   Profile: undefined;
-  
+
   // Profile screens
   UserProfile: { username: string };
   Settings: undefined;
   FollowRequests: undefined;
-  
+
   // Community screens
   Communities: undefined;
   CommunityDetail: { id: string };
   CreateCommunity: undefined;
-  
+
   // Post screens
   PostDetail: { postId: number };
   SavedPosts: undefined;
-  
+
   // Politicians screens
   Politicians: undefined;
   PoliticianDetail: { id: string };
-  
+
   // Hashtag screens
   Hashtag: { tag: string };
-  
+
   // Message screens
   ConversationDetail: { id: number };
   NewMessage: undefined;
   DirectMessage: { userId: string };
-  
+
   // Other screens
   Debug: undefined;
   OAuthConnectSuccess: { provider?: string };
 };
 
+// Replace the TabParamList (around line 40) with this:
 export type TabParamList = {
   Feed: undefined;
-  Search: undefined;
+  Communities: undefined;
   Map: undefined;
-  Messages: undefined;
+  Politicians: undefined;
   Profile: undefined;
 };

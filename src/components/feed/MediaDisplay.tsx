@@ -1,8 +1,8 @@
 // src/components/feed/MediaDisplay.tsx
 import { useState, useEffect } from "react";
 import { View, Image, TouchableOpacity, ScrollView, Text } from "react-native";
-import { Video, ResizeMode } from 'expo-av';
-import { MaterialIcons } from '@expo/vector-icons';
+import { Video, ResizeMode } from "expo-av";
+import { MaterialIcons } from "@expo/vector-icons";
 import { MediaType } from "@/types/post";
 
 interface MediaDisplayProps {
@@ -14,7 +14,8 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
   const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Get base URL from environment or use default
-  const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "http://localhost:8080";
+  const BASE_URL =
+    process.env.EXPO_PUBLIC_BASE_URL || "http://192.168.137.1:8080";
 
   useEffect(() => {
     if (media && media.length > 0) {
@@ -58,14 +59,18 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
     <View className="mt-3">
       {/* Main media display */}
       <View className="rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 mb-2">
-        {selectedMedia.mediaType === "image" || selectedMedia.mediaType === "gif" ? (
+        {selectedMedia.mediaType === "image" ||
+        selectedMedia.mediaType === "gif" ? (
           <TouchableOpacity activeOpacity={0.9}>
             <Image
               source={{ uri: getFullUrl(selectedMedia.url) }}
-              style={{ width: '100%', height: 300 }}
+              style={{ width: "100%", height: 300 }}
               resizeMode="contain"
               onError={(error) => {
-                console.error("Failed to load image:", getFullUrl(selectedMedia.url));
+                console.error(
+                  "Failed to load image:",
+                  getFullUrl(selectedMedia.url)
+                );
                 console.error("Error details:", error);
               }}
             />
@@ -74,7 +79,7 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
           <TouchableOpacity activeOpacity={0.9}>
             <Video
               source={{ uri: getFullUrl(selectedMedia.url) }}
-              style={{ width: '100%', height: 300 }}
+              style={{ width: "100%", height: 300 }}
               useNativeControls
               resizeMode={ResizeMode.CONTAIN}
               shouldPlay={false}
@@ -85,8 +90,8 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
 
       {/* Thumbnails for multiple media */}
       {media.length > 1 && (
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
         >
@@ -99,13 +104,14 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
               }`}
               style={{
                 borderWidth: index === selectedMediaIndex ? 2 : 0,
-                borderColor: index === selectedMediaIndex ? "#3B82F6" : "transparent",
+                borderColor:
+                  index === selectedMediaIndex ? "#3B82F6" : "transparent",
               }}
             >
               {item.mediaType === "image" || item.mediaType === "gif" ? (
                 <Image
                   source={{ uri: getFullUrl(item.thumbnailUrl || item.url) }}
-                  style={{ width: '100%', height: '100%' }}
+                  style={{ width: "100%", height: "100%" }}
                   resizeMode="cover"
                 />
               ) : item.mediaType === "video" ? (

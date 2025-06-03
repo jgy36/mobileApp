@@ -1,7 +1,14 @@
 // src/screens/community/CommunityDetailScreen.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Alert, ImageBackground } from "react-native";
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ImageBackground,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { Card } from "@/components/ui/card";
 import BackButton from "@/components/navigation/BackButton";
 import LoadingState from "@/components/ui/LoadingState";
@@ -18,13 +25,14 @@ import { CommunityData } from "@/types/community";
 import { PostType } from "@/types/post";
 import { useCommunity } from "@/hooks/useCommunity";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
 const CommunityDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { id } = route.params as { id: string };
-  
+
   // Use our custom hook to manage community data
   // Pass undefined instead of null for optional parameters
   const {
@@ -35,7 +43,7 @@ const CommunityDetailScreen = () => {
     isJoined,
     memberCount,
     handleToggleMembership,
-    handlePostCreated
+    handlePostCreated,
   } = useCommunity(id, undefined, undefined, undefined);
 
   // Error state
@@ -44,17 +52,20 @@ const CommunityDetailScreen = () => {
       <View className="flex-1 bg-background">
         <View className="max-w-5xl mx-auto p-4">
           <BackButton fallbackUrl="/community" className="mb-4" />
-          
+
           <Card className="shadow-md">
             <View className="p-6">
               <Text className="text-foreground">
-                {error || `The community "${id}" doesn't exist or may have been removed.`}
+                {error ||
+                  `The community "${id}" doesn't exist or may have been removed.`}
               </Text>
-              <TouchableOpacity 
-                onPress={() => navigation.navigate('Communities')} 
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Communities")}
                 className="mt-4 px-4 py-2 bg-primary rounded-lg"
               >
-                <Text className="text-primary-foreground">Back to Communities</Text>
+                <Text className="text-primary-foreground">
+                  Back to Communities
+                </Text>
               </TouchableOpacity>
             </View>
           </Card>
@@ -78,27 +89,30 @@ const CommunityDetailScreen = () => {
     <ScrollView className="flex-1 bg-background">
       {/* Community Banner */}
       {community.banner ? (
-        <ImageBackground 
+        <ImageBackground
           source={{ uri: community.banner }}
           className="w-full h-40"
-          style={{ backgroundColor: community.color || '#3b82f6' }}
+          style={{ backgroundColor: community.color || "#3b82f6" }}
         >
           <View className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         </ImageBackground>
       ) : (
-        <View 
-          className="w-full h-40" 
-          style={{ backgroundColor: community.color || '#3b82f6' }}
+        <View
+          className="w-full h-40"
+          style={{ backgroundColor: community.color || "#3b82f6" }}
         >
           <View className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         </View>
       )}
 
       <View className="max-w-5xl mx-auto px-4 -mt-16 relative z-10">
-        <BackButton fallbackUrl="/community" className="mb-4 bg-background/80 backdrop-blur-sm" />
-        
+        <BackButton
+          fallbackUrl="/community"
+          className="mb-4 bg-background/80 backdrop-blur-sm"
+        />
+
         {/* Community Header Component */}
-        <CommunityHeader 
+        <CommunityHeader
           community={community}
           isJoined={isJoined}
           memberCount={memberCount}
@@ -110,22 +124,22 @@ const CommunityDetailScreen = () => {
           {/* Left Column - Posts & Content */}
           <View className="space-y-6">
             {/* Create Post Form Component */}
-            <CommunityPostForm 
+            <CommunityPostForm
               communityId={community.id}
               isJoined={isJoined}
               onPostCreated={handlePostCreated}
             />
-            
+
             {/* Community Content Tabs Component */}
             <CommunityTabs posts={posts} />
           </View>
 
           {/* Right Column - Community Info & Rules */}
           <View className="space-y-6">
-            <CommunityInfo 
-              community={community} 
-              memberCount={memberCount} 
-              onJoin={handleToggleMembership} 
+            <CommunityInfo
+              community={community}
+              memberCount={memberCount}
+              onJoin={handleToggleMembership}
             />
           </View>
         </View>

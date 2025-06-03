@@ -1,8 +1,15 @@
 // src/components/map/ElectionMap.tsx
 import { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from "react-native";
-import { Map as MapIcon, Search } from "react-native-vector-icons/Feather";
-
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+  ActivityIndicator,
+  TextInput,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
 // Note: For a full map implementation, you would need react-native-maps or react-native-mapbox-gl
 // This is a simplified version that shows county selection
 
@@ -34,12 +41,30 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
         // In a real implementation, this would fetch from your actual election data
         // For now, we'll create some mock data
         const mockCounties: CountyData[] = [
-          { name: "Kent County", state: "Michigan", fips: "26081", per_gop: 0.45, per_dem: 0.55 },
-          { name: "Ottawa County", state: "Michigan", fips: "26139", per_gop: 0.60, per_dem: 0.40 },
-          { name: "Wayne County", state: "Michigan", fips: "26163", per_gop: 0.25, per_dem: 0.75 },
+          {
+            name: "Kent County",
+            state: "Michigan",
+            fips: "26081",
+            per_gop: 0.45,
+            per_dem: 0.55,
+          },
+          {
+            name: "Ottawa County",
+            state: "Michigan",
+            fips: "26139",
+            per_gop: 0.6,
+            per_dem: 0.4,
+          },
+          {
+            name: "Wayne County",
+            state: "Michigan",
+            fips: "26163",
+            per_gop: 0.25,
+            per_dem: 0.75,
+          },
           // Add more counties as needed
         ];
-        
+
         setCounties(mockCounties);
         setFilteredCounties(mockCounties);
       } catch (err) {
@@ -54,9 +79,10 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
 
   useEffect(() => {
     if (searchQuery) {
-      const filtered = counties.filter(county =>
-        county.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        county.state.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = counties.filter(
+        (county) =>
+          county.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          county.state.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredCounties(filtered);
     } else {
@@ -87,7 +113,9 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
     return (
       <View className="flex-1 items-center justify-center p-4">
         <Text className="text-red-500 text-lg font-bold mb-2">Map Error</Text>
-        <Text className="text-gray-700 dark:text-gray-300 text-center">{error}</Text>
+        <Text className="text-gray-700 dark:text-gray-300 text-center">
+          {error}
+        </Text>
         <TouchableOpacity
           onPress={() => window.location.reload()}
           className="mt-4 bg-blue-500 px-4 py-2 rounded-md"
@@ -104,10 +132,10 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
         <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
           Election Results by County
         </Text>
-        
+
         {/* Search Bar */}
         <View className="flex-row items-center bg-gray-100 dark:bg-gray-800 rounded-md p-3">
-          <Search name="search" size={20} color="gray" className="mr-3" />
+          <Feather name="search" size={20} color="gray" className="mr-3" />{" "}
           <TextInput
             placeholder="Search counties..."
             value={searchQuery}
@@ -120,7 +148,8 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
       {/* Notice about map implementation */}
       <View className="bg-blue-50 dark:bg-blue-900 p-4 mx-4 mt-4 rounded-md">
         <Text className="text-blue-800 dark:text-blue-300 text-sm">
-          This is a simplified county list. In a full implementation, you would see an interactive map here.
+          This is a simplified county list. In a full implementation, you would
+          see an interactive map here.
         </Text>
       </View>
 
@@ -137,7 +166,9 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
             <TouchableOpacity
               onPress={() => handleCountySelect(item)}
               className={`p-4 border-b border-gray-200 dark:border-gray-700 ${
-                selectedCounty === item.name ? "bg-blue-50 dark:bg-blue-900" : ""
+                selectedCounty === item.name
+                  ? "bg-blue-50 dark:bg-blue-900"
+                  : ""
               }`}
             >
               <View className="flex-row items-center justify-between">
@@ -149,7 +180,12 @@ const ElectionMap = ({ onCountySelected }: ElectionMapProps) => {
                     {getPartyStrength(item.per_gop, item.per_dem)}
                   </Text>
                 </View>
-                <View className={`w-4 h-4 rounded-full ${getPartyColor(item.per_gop, item.per_dem)}`} />
+                <View
+                  className={`w-4 h-4 rounded-full ${getPartyColor(
+                    item.per_gop,
+                    item.per_dem
+                  )}`}
+                />
               </View>
             </TouchableOpacity>
           )}

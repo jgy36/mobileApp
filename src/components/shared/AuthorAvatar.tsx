@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Image, Text } from 'react-native';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { View, Image, Text } from "react-native";
+import axios from "axios";
 import { getProfileImageUrl, getFullImageUrl } from "@/utils/imageUtils";
 
 interface AuthorAvatarProps {
@@ -13,8 +13,8 @@ interface AuthorAvatarProps {
 const AuthorAvatar: React.FC<AuthorAvatarProps> = ({
   username,
   size = 32,
-  className = '',
-  onPress
+  className = "",
+  onPress,
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,18 +31,26 @@ const AuthorAvatar: React.FC<AuthorAvatarProps> = ({
       setImageUrl(defaultImage);
 
       try {
-        const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
-        const response = await axios.get(`${API_BASE_URL}/users/profile/${username}`, {
-          headers: {
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
-          },
-        });
+        const API_BASE_URL =
+          process.env.EXPO_PUBLIC_API_BASE_URL ||
+          "http://192.168.137.1:8080/api";
+        const response = await axios.get(
+          `${API_BASE_URL}/users/profile/${username}`,
+          {
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          }
+        );
 
         const profile = response.data;
-        
+
         if (profile.profileImageUrl) {
-          const processedUrl = getProfileImageUrl(profile.profileImageUrl, username);
+          const processedUrl = getProfileImageUrl(
+            profile.profileImageUrl,
+            username
+          );
           setImageUrl(processedUrl);
         }
       } catch (error) {
@@ -62,7 +70,7 @@ const AuthorAvatar: React.FC<AuthorAvatarProps> = ({
   };
 
   return (
-    <View 
+    <View
       className={`rounded-full overflow-hidden border border-border/30 ${className}`}
       style={{ width: size, height: size }}
     >

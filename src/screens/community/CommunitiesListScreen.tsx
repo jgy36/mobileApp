@@ -1,7 +1,15 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from "@expo/vector-icons";
 // src/screens/community/CommunitiesListScreen.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/redux/store";
@@ -20,12 +28,15 @@ interface Community {
   trending?: boolean;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
 const CommunitiesListScreen = () => {
   const navigation = useNavigation();
   const [communities, setCommunities] = useState<Community[]>([]);
-  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>([]);
+  const [filteredCommunities, setFilteredCommunities] = useState<Community[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +52,7 @@ const CommunitiesListScreen = () => {
 
   const handleCreateButtonClick = () => {
     if (isAdmin) {
-      (navigation as any).navigate('CreateCommunity');
+      (navigation as any).navigate("CreateCommunity");
     } else {
       Alert.alert(
         "Permission Denied",
@@ -60,14 +71,12 @@ const CommunitiesListScreen = () => {
       console.log("Communities data received:", response.data);
 
       // Mark top 2 communities as trending
-      const communitiesWithTrending = response.data.map(
-        (community, index) => ({
-          ...community,
-          trending: index < 2,
-          // Set isJoined based on Redux state
-          isJoined: joinedCommunityIds.includes(community.id),
-        })
-      );
+      const communitiesWithTrending = response.data.map((community, index) => ({
+        ...community,
+        trending: index < 2,
+        // Set isJoined based on Redux state
+        isJoined: joinedCommunityIds.includes(community.id),
+      }));
 
       setCommunities(communitiesWithTrending);
       setFilteredCommunities(communitiesWithTrending);
@@ -93,7 +102,7 @@ const CommunitiesListScreen = () => {
     if (!isAuthenticated) {
       Alert.alert("Login Required", "Please login to join communities", [
         { text: "Cancel", style: "cancel" },
-        { text: "Login", onPress: () => (navigation as any).navigate('Login') }
+        { text: "Login", onPress: () => (navigation as any).navigate("Login") },
       ]);
       return;
     }
@@ -148,7 +157,7 @@ const CommunitiesListScreen = () => {
       }
     } catch (error) {
       console.error("Error toggling community membership:", error);
-      
+
       // Revert local state if API call fails
       setCommunities((prevCommunities) =>
         prevCommunities.map((c) => {
@@ -182,7 +191,7 @@ const CommunitiesListScreen = () => {
 
   const navigateToCommunity = (communityId: string) => {
     console.log(`Navigating to community: ${communityId}`);
-    (navigation as any).navigate('CommunityDetail', { id: communityId });
+    (navigation as any).navigate("CommunityDetail", { id: communityId });
   };
 
   // Loading state
@@ -190,7 +199,9 @@ const CommunitiesListScreen = () => {
     return (
       <View className="flex-1 bg-background items-center justify-center">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-gray-500 dark:text-gray-400">Loading communities...</Text>
+        <Text className="mt-4 text-gray-500 dark:text-gray-400">
+          Loading communities...
+        </Text>
       </View>
     );
   }
@@ -203,7 +214,9 @@ const CommunitiesListScreen = () => {
           <View className="bg-white dark:bg-gray-900 p-6 rounded-lg">
             <MaterialIcons name="error-outline" size={48} color="#EF4444" />
             <Text className="text-red-500 font-medium text-lg mb-2">Error</Text>
-            <Text className="text-gray-700 dark:text-gray-300 mb-4">{error}</Text>
+            <Text className="text-gray-700 dark:text-gray-300 mb-4">
+              {error}
+            </Text>
             <TouchableOpacity
               onPress={handleRefresh}
               className="bg-blue-500 px-4 py-2 rounded-lg items-center"
@@ -229,7 +242,10 @@ const CommunitiesListScreen = () => {
       >
         {/* Top row with name and join button */}
         <View className="flex-row justify-between items-start mb-2">
-          <Text className="text-lg font-medium text-gray-900 dark:text-white flex-1 pr-2" numberOfLines={1}>
+          <Text
+            className="text-lg font-medium text-gray-900 dark:text-white flex-1 pr-2"
+            numberOfLines={1}
+          >
             {community.name}
           </Text>
 
@@ -239,16 +255,18 @@ const CommunitiesListScreen = () => {
               handleJoinCommunity(community.id);
             }}
             className={`px-4 py-2 rounded-lg ${
-              community.isJoined 
-                ? 'bg-gray-200 dark:bg-gray-700' 
-                : 'bg-blue-500'
+              community.isJoined
+                ? "bg-gray-200 dark:bg-gray-700"
+                : "bg-blue-500"
             }`}
           >
-            <Text className={`font-medium ${
-              community.isJoined 
-                ? 'text-gray-700 dark:text-gray-300' 
-                : 'text-white'
-            }`}>
+            <Text
+              className={`font-medium ${
+                community.isJoined
+                  ? "text-gray-700 dark:text-gray-300"
+                  : "text-white"
+              }`}
+            >
               {community.isJoined ? "Joined" : "Join"}
             </Text>
           </TouchableOpacity>
@@ -259,14 +277,19 @@ const CommunitiesListScreen = () => {
           <View className="mb-3">
             <View className="bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full flex-row items-center self-start">
               <MaterialIcons name="trending-up" size={12} color="#F97316" />
-              <Text className="text-orange-800 dark:text-orange-200 text-xs font-medium ml-1">Trending</Text>
+              <Text className="text-orange-800 dark:text-orange-200 text-xs font-medium ml-1">
+                Trending
+              </Text>
             </View>
           </View>
         )}
 
         {/* Description */}
         <View className="mb-3">
-          <Text className="text-sm text-gray-600 dark:text-gray-400" numberOfLines={2}>
+          <Text
+            className="text-sm text-gray-600 dark:text-gray-400"
+            numberOfLines={2}
+          >
             {community.description}
           </Text>
         </View>
@@ -288,7 +311,9 @@ const CommunitiesListScreen = () => {
       <View className="bg-white dark:bg-gray-800 pt-12 pb-4 px-4 border-b border-gray-200 dark:border-gray-700">
         <View className="flex-row justify-between items-center">
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-gray-900 dark:text-white">Communities</Text>
+            <Text className="text-3xl font-bold text-gray-900 dark:text-white">
+              Communities
+            </Text>
             <Text className="text-gray-600 dark:text-gray-400">
               Join discussions with like-minded individuals
             </Text>
@@ -310,7 +335,10 @@ const CommunitiesListScreen = () => {
           renderItem={renderCommunityCard}
           keyExtractor={(item) => item.id}
           refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+            />
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingVertical: 16 }}
@@ -318,7 +346,9 @@ const CommunitiesListScreen = () => {
       ) : (
         <View className="flex-1 justify-center items-center py-12 px-4">
           <MaterialIcons name="group" size={64} color="#6B7280" />
-          <Text className="text-lg font-medium text-gray-900 dark:text-white mb-2">No Communities Found</Text>
+          <Text className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No Communities Found
+          </Text>
           <Text className="text-gray-600 dark:text-gray-400 text-center mb-4">
             There are no communities available
           </Text>

@@ -13,9 +13,9 @@ import {
   leaveCommunity,
   createCommunityPost,
 } from "@/api/communities";
-import { 
+import {
   setNotificationPreference,
-  updatePreferenceFromServer
+  updatePreferenceFromServer,
 } from "@/redux/slices/notificationPreferencesSlice";
 import { CommunityData, CommunityMembershipResponse } from "@/types/community";
 import { PostType } from "@/types/post";
@@ -35,7 +35,8 @@ type UseCommunityReturn = {
   refreshPosts: () => Promise<void>;
 };
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
 export const useCommunity = (
   communityId: string,
@@ -61,15 +62,18 @@ export const useCommunity = (
   const joinedCommunityIds = useSelector(
     (state: RootState) => state.communities.joinedCommunities
   );
-  
+
   // Get notification state from Redux
-  const notificationState = useSelector(
-    (state: RootState) => 
-      communityId ? state.notificationPreferences.communityPreferences[communityId] : undefined
+  const notificationState = useSelector((state: RootState) =>
+    communityId
+      ? state.notificationPreferences.communityPreferences[communityId]
+      : undefined
   );
-  
+
   // Check if user is joined based on Redux state
-  const isJoined = communityId ? joinedCommunityIds.includes(communityId) : false;
+  const isJoined = communityId
+    ? joinedCommunityIds.includes(communityId)
+    : false;
 
   // Refs for managing fetch operations
   const isFetching = useRef(false);
@@ -94,14 +98,19 @@ export const useCommunity = (
     try {
       // Add cache-busting timestamp
       const timestamp = Date.now();
-      const response = await fetch(`${API_BASE_URL}/communities/${communityId}?t=${timestamp}`, {
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          ...(currentUser.token && { 'Authorization': `Bearer ${currentUser.token}` })
+      const response = await fetch(
+        `${API_BASE_URL}/communities/${communityId}?t=${timestamp}`,
+        {
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+            ...(currentUser.token && {
+              Authorization: `Bearer ${currentUser.token}`,
+            }),
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -132,15 +141,21 @@ export const useCommunity = (
 
       // Handle notification state updates from server
       if (communityData.isNotificationsOn !== undefined) {
-        const serverNotificationState = Boolean(communityData.isNotificationsOn);
-        
+        const serverNotificationState = Boolean(
+          communityData.isNotificationsOn
+        );
+
         // Always update the Redux store with the server state
-        dispatch(updatePreferenceFromServer({
-          communityId,
-          enabled: serverNotificationState
-        }));
-        
-        console.log(`Synced notification state from server: ${communityId} => ${serverNotificationState}`);
+        dispatch(
+          updatePreferenceFromServer({
+            communityId,
+            enabled: serverNotificationState,
+          })
+        );
+
+        console.log(
+          `Synced notification state from server: ${communityId} => ${serverNotificationState}`
+        );
       }
     } catch (error) {
       console.error("Error fetching community:", error);
@@ -160,18 +175,23 @@ export const useCommunity = (
     if (!communityId) return;
 
     try {
-      const response = await fetch(`${API_BASE_URL}/communities/${communityId}/posts`, {
-        headers: {
-          ...(currentUser.token && { 'Authorization': `Bearer ${currentUser.token}` })
+      const response = await fetch(
+        `${API_BASE_URL}/communities/${communityId}/posts`,
+        {
+          headers: {
+            ...(currentUser.token && {
+              Authorization: `Bearer ${currentUser.token}`,
+            }),
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       if (isMounted.current) {
         setPosts(data);
       }
@@ -194,8 +214,10 @@ export const useCommunity = (
   const handleToggleMembership = async () => {
     if (!isAuthenticated || !community) return;
 
-    console.log(`Toggling membership for ${community.id} - Current state: ${isJoined}`);
-    
+    console.log(
+      `Toggling membership for ${community.id} - Current state: ${isJoined}`
+    );
+
     // Update member count optimistically
     setMemberCount((prevCount) => (isJoined ? prevCount - 1 : prevCount + 1));
 
@@ -228,7 +250,7 @@ export const useCommunity = (
         setMemberCount((prevCount) =>
           isJoined ? prevCount + 1 : prevCount - 1
         );
-        
+
         Alert.alert("Error", response.message || "Failed to update membership");
       }
     } catch (error) {
@@ -236,7 +258,7 @@ export const useCommunity = (
 
       // Revert UI state on error
       setMemberCount((prevCount) => (isJoined ? prevCount + 1 : prevCount - 1));
-      
+
       Alert.alert("Error", "Failed to update membership. Please try again.");
     }
   };
@@ -244,7 +266,7 @@ export const useCommunity = (
   // Refresh posts after creating a new one
   const handlePostCreated = async () => {
     if (!communityId) return;
-    
+
     console.log("Refreshing posts after new post created");
     await fetchPosts();
   };

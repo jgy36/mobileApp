@@ -1,7 +1,7 @@
 // src/components/messages/MessageNotificationIndicator.tsx
 import { useEffect, useState, useCallback } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import { MessageSquare } from "react-native-vector-icons/Feather";
+import { Feather } from "@expo/vector-icons";
 import { getUnreadMessagesCount } from "@/api/messages";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -58,7 +58,7 @@ const MessageNotificationIndicator = ({
 
   return (
     <View className={`relative ${className || ""}`}>
-      <MessageSquare name="message-square" size={24} color="gray" />
+      <Feather name="message-square" size={24} color="gray" />
       {showCount && !loading && unreadCount > 0 && (
         <View className="absolute -top-2 -right-2 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
           <Text className="text-white text-xs font-bold">

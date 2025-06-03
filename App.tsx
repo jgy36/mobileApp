@@ -13,8 +13,7 @@ import { LogBox, View, Text, ActivityIndicator, Button } from "react-native";
 import { store, persistor } from "./src/redux/store";
 import { apiClient } from "./src/api/apiClient";
 import { getToken } from "./src/utils/tokenUtils";
-import * as Network from 'expo-network';  // Add this import at the top with other imports
-
+import * as Network from "expo-network"; // Add this import at the top with other imports
 
 // Hide known warnings
 LogBox.ignoreLogs([
@@ -117,14 +116,14 @@ function MainTabNavigator() {
             case "Feed":
               iconName = "home";
               break;
-            case "Search":
-              iconName = "search";
-              break;
             case "Communities":
-              iconName = "groups";
+              iconName = "group"; // Changed from "groups" to "group"
               break;
-            case "Messages":
-              iconName = "message";
+            case "Map":
+              iconName = "map";
+              break;
+            case "Politicians":
+              iconName = "how-to-vote";
               break;
             case "Profile":
               iconName = "person";
@@ -141,9 +140,9 @@ function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="Feed" component={FeedScreen} />
-      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen name="Communities" component={CommunitiesListScreen} />
-      <Tab.Screen name="Messages" component={MessageScreen} />
+      <Tab.Screen name="Map" component={MapScreen} />
+      <Tab.Screen name="Politicians" component={PoliticiansScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -328,7 +327,6 @@ function AppNavigator() {
             <Stack.Screen name="MainTabs" component={MainTabNavigator} />
 
             {/* Stack screens that overlay the tabs */}
-            <Stack.Screen name="Map" component={MapScreen} />
             <Stack.Screen name="UserProfile" component={UserProfileScreen} />
             <Stack.Screen name="Settings" component={SettingsScreen} />
             <Stack.Screen
@@ -345,7 +343,6 @@ function AppNavigator() {
             />
             <Stack.Screen name="PostDetail" component={PostDetailScreen} />
             <Stack.Screen name="SavedPosts" component={SavedPostsScreen} />
-            <Stack.Screen name="Politicians" component={PoliticiansScreen} />
             <Stack.Screen
               name="PoliticianDetail"
               component={PoliticianDetailScreen}
@@ -367,30 +364,32 @@ function AppNavigator() {
 // App.tsx - FIXED VERSION
 // Then in your App component:
 export default function App() {
-  console.log("App component initializing...");
+  console.log("=== APP COMPONENT STARTING ===");
   const [hasError, setHasError] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
   const [appState, setAppState] = React.useState("initializing");
 
+  console.log("=== CURRENT APP STATE:", appState, "===");
+
   // Simplified initialization to help debug
   useEffect(() => {
+    console.log("=== APP MOUNTED - useEffect running ===");
     console.log("App component mounted, setting state to 'mounted'");
     setAppState("mounted");
 
     // Simple test to check if basic React functionality works
     setTimeout(() => {
-      console.log("Setting appState to 'ready' after timeout");
+      console.log("=== TIMEOUT FIRED - Setting appState to 'ready' ===");
       setAppState("ready");
     }, 2000);
 
-    // Network check function - moved to separate effect to isolate potential issues
     return () => console.log("App component unmounted");
   }, []);
 
   // Separate useEffect for network tests to isolate potential issues
   useEffect(() => {
     if (appState !== "mounted") return;
-    
+
     console.log("Starting network tests...");
     const runNetworkTests = async () => {
       try {
@@ -398,32 +397,79 @@ export default function App() {
         const networkState = await Network.getNetworkStateAsync();
         console.log("Network state:", networkState);
       } catch (error) {
-        console.error("Failed to get network state:", 
-          error instanceof Error ? error.message : "Unknown error");
+        console.error(
+          "Failed to get network state:",
+          error instanceof Error ? error.message : "Unknown error"
+        );
       }
     };
-    
-    runNetworkTests().catch(err => {
+
+    runNetworkTests().catch((err) => {
       console.error("Uncaught error in network tests:", err);
     });
   }, [appState]);
 
   // Add this to test rendering without Redux
+  // Test component definition
+  const TestComponent = () => (
+    <View>
+      {/* This should work (inline styles) */}
+      <View
+        style={{
+          backgroundColor: "blue",
+          padding: 16,
+          margin: 16,
+          borderRadius: 8,
+        }}
+      >
+        <Text
+          style={{
+            color: "white",
+            fontSize: 20,
+            fontWeight: "bold",
+            textAlign: "center",
+          }}
+        >
+          Inline Style Test - This should be blue with white text
+        </Text>
+      </View>
+
+      {/* This should work if NativeWind is working */}
+      <View className="bg-red-500 p-4 m-4 rounded-lg">
+        <Text className="text-white text-xl font-bold text-center">
+          NativeWind Test - This should be RED with white text
+        </Text>
+      </View>
+    </View>
+  );
+
   if (appState === "initializing") {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightblue" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "lightblue",
+        }}
+      >
         <Text>Initializing app...</Text>
       </View>
     );
   }
 
-  if (appState === "mounted") {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightgreen" }}>
-        <Text>App mounted, running tests...</Text>
-      </View>
-    );
-  }
+  // Remove or comment out this entire section:
+  /*
+if (appState === "mounted") {
+  console.log("=== RENDERING MOUNTED STATE ===");
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightgreen" }}>
+      <Text>App mounted, running tests...</Text>
+      <TestComponent />
+    </View>
+  );
+}
+*/
 
   if (hasError && error) {
     return <ErrorScreen error={error} resetError={() => setHasError(false)} />;

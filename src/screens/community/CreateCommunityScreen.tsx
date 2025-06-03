@@ -1,8 +1,8 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from "@expo/vector-icons";
 // src/screens/community/CreateCommunityScreen.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, Alert, TouchableOpacity } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
@@ -18,9 +18,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
 // Add imports for the missing icons
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
 // Form validation helper
 type ValidationErrors = {
@@ -45,20 +46,22 @@ const CreateCommunityScreen = () => {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isCreating, setIsCreating] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
-  
+
   // Redirect if not authenticated or not an admin
   useEffect(() => {
     if (!isAuthenticated) {
       Alert.alert("Authentication Required", "Please login to continue", [
-        { text: "OK", onPress: () => navigation.navigate('Login') }
+        { text: "OK", onPress: () => navigation.navigate("Login") },
       ]);
       return;
     }
-    
+
     if (!isAdmin) {
-      Alert.alert("Permission Denied", "Only administrators can create communities", [
-        { text: "OK", onPress: () => navigation.navigate('Communities') }
-      ]);
+      Alert.alert(
+        "Permission Denied",
+        "Only administrators can create communities",
+        [{ text: "OK", onPress: () => navigation.navigate("Communities") }]
+      );
       return;
     }
   }, [isAuthenticated, isAdmin]);
@@ -82,7 +85,8 @@ const CreateCommunityScreen = () => {
     } else if (id.length > 30) {
       newErrors.id = "Community ID must be less than 30 characters";
     } else if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
-      newErrors.id = "Only letters, numbers, underscores and hyphens are allowed";
+      newErrors.id =
+        "Only letters, numbers, underscores and hyphens are allowed";
     }
 
     if (!name.trim()) {
@@ -135,9 +139,9 @@ const CreateCommunityScreen = () => {
 
       // Show success message
       Alert.alert("Success!", "Your community has been created");
-      
+
       // Redirect to the new community
-      navigation.navigate('CommunityDetail', { id: response.data.id });
+      navigation.navigate("CommunityDetail", { id: response.data.id });
     } catch (error) {
       console.error("Error creating community:", error);
 
@@ -149,7 +153,10 @@ const CreateCommunityScreen = () => {
             id: "Community ID already exists. Please choose another one.",
           }));
         } else {
-          Alert.alert("Error", axiosError.response?.data?.error || "Failed to create community");
+          Alert.alert(
+            "Error",
+            axiosError.response?.data?.error || "Failed to create community"
+          );
         }
       } else {
         Alert.alert("Error", "An unexpected error occurred. Please try again.");
@@ -163,9 +170,12 @@ const CreateCommunityScreen = () => {
     <ScrollView className="flex-1 bg-background">
       <View className="max-w-3xl mx-auto p-6">
         <View className="mb-6">
-          <Text className="text-2xl font-bold text-foreground">Create a Community</Text>
+          <Text className="text-2xl font-bold text-foreground">
+            Create a Community
+          </Text>
           <Text className="text-muted-foreground">
-            Create a community to gather people around a shared interest or topic
+            Create a community to gather people around a shared interest or
+            topic
           </Text>
         </View>
 
@@ -178,7 +188,9 @@ const CreateCommunityScreen = () => {
 
         <Card className="shadow-md">
           <CardHeader>
-            <Text className="text-lg font-semibold text-foreground">Community Details</Text>
+            <Text className="text-lg font-semibold text-foreground">
+              Community Details
+            </Text>
             <Text className="text-muted-foreground">
               Fill out the information below to create your community
             </Text>
@@ -200,7 +212,8 @@ const CreateCommunityScreen = () => {
                 <Text className="text-sm text-destructive">{errors.id}</Text>
               )}
               <Text className="text-xs text-muted-foreground">
-                This will be used in your community URL: /community/{id || "example"}
+                This will be used in your community URL: /community/
+                {id || "example"}
               </Text>
             </View>
 
@@ -235,7 +248,9 @@ const CreateCommunityScreen = () => {
                 numberOfLines={4}
               />
               {errors.description && (
-                <Text className="text-sm text-destructive">{errors.description}</Text>
+                <Text className="text-sm text-destructive">
+                  {errors.description}
+                </Text>
               )}
               <Text className="text-xs text-muted-foreground">
                 This will be displayed on your community page
@@ -244,7 +259,9 @@ const CreateCommunityScreen = () => {
 
             {/* Community Rules */}
             <View className="space-y-2">
-              <Label className="text-base font-medium">Community Rules (Optional)</Label>
+              <Label className="text-base font-medium">
+                Community Rules (Optional)
+              </Label>
               <Textarea
                 value={rules}
                 onChangeText={setRules}
@@ -264,10 +281,16 @@ const CreateCommunityScreen = () => {
             {/* Information note */}
             <View className="rounded-lg border border-border p-4">
               <View className="flex-row">
-                <Ionicons name="information-circle-outline" size={20} style={{ marginRight: 8 }} color="#666" />
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  style={{ marginRight: 8 }}
+                  color="#666"
+                />
                 <Text className="text-sm text-muted-foreground flex-1">
-                  By creating a community, you agree to moderate it according to platform guidelines. 
-                  You'll automatically become its first member and moderator.
+                  By creating a community, you agree to moderate it according to
+                  platform guidelines. You'll automatically become its first
+                  member and moderator.
                 </Text>
               </View>
             </View>
@@ -276,7 +299,7 @@ const CreateCommunityScreen = () => {
           <CardFooter className="flex-row justify-between">
             <Button
               variant="outline"
-              onPress={() => navigation.navigate('Communities')}
+              onPress={() => navigation.navigate("Communities")}
               disabled={isCreating}
             >
               <Text>Cancel</Text>
@@ -289,7 +312,11 @@ const CreateCommunityScreen = () => {
                 </View>
               ) : (
                 <View className="flex-row items-center">
-                  <Ionicons name="people" size={16} style={{ marginRight: 8 }} />
+                  <Ionicons
+                    name="people"
+                    size={16}
+                    style={{ marginRight: 8 }}
+                  />
                   <Text>Create Community</Text>
                 </View>
               )}

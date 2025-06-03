@@ -1,7 +1,16 @@
 // src/screens/UserProfileScreen.tsx
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image, FlatList, RefreshControl, ActivityIndicator } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -34,7 +43,8 @@ interface UserProfile {
   isPrivate?: boolean;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const API_BASE_URL =
+  process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
 
 const UserProfileScreen = () => {
   const navigation = useNavigation();
@@ -107,7 +117,9 @@ const UserProfileScreen = () => {
         if (Array.isArray(userPosts)) {
           // Sort posts by date (newest first)
           const sortedPosts = [...userPosts].sort((a, b) => {
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            return (
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
           });
           setPosts(sortedPosts);
         } else {
@@ -177,12 +189,16 @@ const UserProfileScreen = () => {
     <TouchableOpacity
       onPress={() => setActiveTab(id)}
       className={`flex-1 py-3 items-center ${
-        activeTab === id ? 'border-b-2 border-blue-500' : ''
+        activeTab === id ? "border-b-2 border-blue-500" : ""
       }`}
     >
-      <Text className={`font-medium ${
-        activeTab === id ? 'text-blue-500' : 'text-gray-700 dark:text-gray-300'
-      }`}>
+      <Text
+        className={`font-medium ${
+          activeTab === id
+            ? "text-blue-500"
+            : "text-gray-700 dark:text-gray-300"
+        }`}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -192,7 +208,9 @@ const UserProfileScreen = () => {
     return (
       <View className="flex-1 bg-background items-center justify-center">
         <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-gray-500 dark:text-gray-400">Loading profile...</Text>
+        <Text className="mt-4 text-gray-500 dark:text-gray-400">
+          Loading profile...
+        </Text>
       </View>
     );
   }
@@ -207,7 +225,9 @@ const UserProfileScreen = () => {
           <Text className="text-lg font-semibold">Profile</Text>
         </View>
         <View className="flex-1 items-center justify-center p-6">
-          <Text className="text-red-500 text-center">{error || "User not found"}</Text>
+          <Text className="text-red-500 text-center">
+            {error || "User not found"}
+          </Text>
           <TouchableOpacity
             onPress={handleBack}
             className="mt-4 bg-blue-500 px-6 py-2 rounded-lg"
@@ -233,8 +253,10 @@ const UserProfileScreen = () => {
         </View>
       </View>
 
-      <ScrollView 
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         showsVerticalScrollIndicator={false}
       >
         {/* Profile Header */}
@@ -244,8 +266,9 @@ const UserProfileScreen = () => {
             <View className="mr-4">
               <Image
                 source={{
-                  uri: profile.profileImageUrl || 
-                       `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`
+                  uri:
+                    profile.profileImageUrl ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`,
                 }}
                 className="w-20 h-20 rounded-full"
               />
@@ -259,11 +282,15 @@ const UserProfileScreen = () => {
                     {profile.displayName || profile.username}
                   </Text>
                   <View className="flex-row items-center">
-                    <Text className="text-gray-500 dark:text-gray-400">@{profile.username}</Text>
+                    <Text className="text-gray-500 dark:text-gray-400">
+                      @{profile.username}
+                    </Text>
                     {profile.isPrivate && (
                       <View className="ml-2 flex-row items-center bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
                         <MaterialIcons name="lock" size={12} color="#6B7280" />
-                        <Text className="text-xs text-gray-600 dark:text-gray-400 ml-1">Private</Text>
+                        <Text className="text-xs text-gray-600 dark:text-gray-400 ml-1">
+                          Private
+                        </Text>
                       </View>
                     )}
                   </View>
@@ -272,17 +299,19 @@ const UserProfileScreen = () => {
                 {/* Action Buttons */}
                 {!isAuthenticated ? (
                   <TouchableOpacity
-                    onPress={() => (navigation as any).navigate('Login')}
+                    onPress={() => (navigation as any).navigate("Login")}
                     className="bg-blue-500 px-4 py-2 rounded-lg"
                   >
                     <Text className="text-white font-medium">Log in</Text>
                   </TouchableOpacity>
                 ) : isCurrentUserProfile ? (
                   <TouchableOpacity
-                    onPress={() => (navigation as any).navigate('Settings')}
+                    onPress={() => (navigation as any).navigate("Settings")}
                     className="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg"
                   >
-                    <Text className="text-gray-700 dark:text-gray-300 font-medium">Edit Profile</Text>
+                    <Text className="text-gray-700 dark:text-gray-300 font-medium">
+                      Edit Profile
+                    </Text>
                   </TouchableOpacity>
                 ) : (
                   <View className="flex-row space-x-2">
@@ -325,7 +354,11 @@ const UserProfileScreen = () => {
               {/* Join Date */}
               {profile.joinDate && (
                 <View className="flex-row items-center mt-3">
-                  <MaterialIcons name="calendar-today" size={16} color="#6B7280" />
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={16}
+                    color="#6B7280"
+                  />
                   <Text className="ml-1 text-gray-500 dark:text-gray-400 text-sm">
                     Joined {new Date(profile.joinDate).toLocaleDateString()}
                   </Text>
@@ -347,8 +380,8 @@ const UserProfileScreen = () => {
 
         {/* Tab Content */}
         <View className="bg-gray-50 dark:bg-gray-900">
-          {activeTab === "posts" && (
-            isAuthenticated ? (
+          {activeTab === "posts" &&
+            (isAuthenticated ? (
               posts.length > 0 ? (
                 posts.map((post) => (
                   <View key={post.id} className="mb-4">
@@ -357,7 +390,9 @@ const UserProfileScreen = () => {
                 ))
               ) : (
                 <View className="p-8 items-center">
-                  {profile.isPrivate && !profile.isFollowing && !isCurrentUserProfile ? (
+                  {profile.isPrivate &&
+                  !profile.isFollowing &&
+                  !isCurrentUserProfile ? (
                     <>
                       <MaterialIcons name="lock" size={48} color="#6B7280" />
                       <Text className="text-lg font-medium text-gray-900 dark:text-white mt-4">
@@ -390,24 +425,27 @@ const UserProfileScreen = () => {
                   You need to be logged in to view this user's posts.
                 </Text>
                 <TouchableOpacity
-                  onPress={() => (navigation as any).navigate('Login')}
+                  onPress={() => (navigation as any).navigate("Login")}
                   className="bg-blue-500 px-6 py-3 rounded-lg mt-4"
                 >
                   <Text className="text-white font-medium">Log In</Text>
                 </TouchableOpacity>
               </View>
-            )
-          )}
+            ))}
 
           {activeTab !== "posts" && (
             <View className="p-8 items-center">
               <Text className="text-lg font-medium text-gray-900 dark:text-white">
-                {activeTab === "comments" ? "Comments Coming Soon" : 
-                 activeTab === "followers" ? "Followers" : "Following"}
+                {activeTab === "comments"
+                  ? "Comments Coming Soon"
+                  : activeTab === "followers"
+                  ? "Followers"
+                  : "Following"}
               </Text>
               <Text className="text-gray-500 dark:text-gray-400 text-center mt-2">
-                {activeTab === "comments" ? "This feature is being developed." :
-                 "Click on the count in the stats to see the complete list."}
+                {activeTab === "comments"
+                  ? "This feature is being developed."
+                  : "Click on the count in the stats to see the complete list."}
               </Text>
             </View>
           )}
