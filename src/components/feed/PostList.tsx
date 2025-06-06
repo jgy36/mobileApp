@@ -9,12 +9,11 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Post from "./Post";
 import { PostType } from "@/types/post";
-import { Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { posts } from "@/api";
 
 interface PostListProps {
@@ -30,7 +29,6 @@ const PostList: React.FC<PostListProps> = ({ activeTab }) => {
   const [noJoinedCommunities, setNoJoinedCommunities] =
     useState<boolean>(false);
 
-  const navigation = useNavigation<any>(); // Fix navigation typing
   const token = useSelector((state: RootState) => state.user.token);
 
   // Get joined communities from Redux
@@ -38,20 +36,27 @@ const PostList: React.FC<PostListProps> = ({ activeTab }) => {
     (state: RootState) => state.communities.joinedCommunities
   );
 
-  // Use a callback to avoid recreation of this function on each render
   const loadPosts = useCallback(
     async (isRefresh = false) => {
-      // If we're on protected tabs with no auth, just return early without setting loading
+      // If we're on protected tabs with no auth, show appropriate message instead of redirecting
       if (
         (!token && activeTab === "following") ||
         (!token && activeTab === "communities")
-      )
+      ) {
+        setLoading(false);
+        setRefreshing(false);
+
+        if (activeTab === "following") {
+          setNotFollowingAnyone(true);
+        } else if (activeTab === "communities") {
+          setNoJoinedCommunities(true);
+        }
         return;
+      }
 
       if (!isRefresh) setLoading(true);
       setError(null);
 
-      // Properly format endpoints with leading slash
       let endpoint;
       if (activeTab === "for-you") {
         endpoint = "/posts/for-you";
@@ -63,20 +68,16 @@ const PostList: React.FC<PostListProps> = ({ activeTab }) => {
 
       try {
         console.log(`Fetching posts from endpoint: ${endpoint}`);
-        // Use our new API function
         const data = await posts.getPosts(endpoint);
 
-        // Check if we received fallback data vs actual data
         const isFallbackData =
           data.length > 0 &&
           data.some((post) => post.author === "NetworkIssue");
 
         if (isFallbackData) {
-          // Show connection issue warning but still display fallback data
           setError("Connection issue detected. Showing cached content.");
         }
 
-        // Set states for empty feed messages based on the active tab
         if (activeTab === "following" && data.length === 0) {
           setNotFollowingAnyone(joinedCommunities.length === 0);
         } else {
@@ -101,100 +102,119 @@ const PostList: React.FC<PostListProps> = ({ activeTab }) => {
     [activeTab, token, joinedCommunities]
   );
 
-  // Trigger post loading when tab changes or on component mount
   useEffect(() => {
-    // Redirect to landing page if not authenticated for protected tabs
-    if (!token && (activeTab === "following" || activeTab === "communities")) {
-      console.warn("No auth token found! Redirecting to landing page...");
-      navigation.navigate("Landing");
-      return;
-    }
-
     loadPosts();
-  }, [activeTab, token, navigation, loadPosts]);
+  }, [activeTab, token, loadPosts]);
 
-  // Handle retry action
   const handleRetry = () => {
     loadPosts();
   };
 
-  // Handle refresh
   const handleRefresh = () => {
     setRefreshing(true);
     loadPosts(true);
   };
-
-  if (!token && (activeTab === "following" || activeTab === "communities"))
-    return null;
 
   const renderPost = ({ item }: { item: PostType }) => (
     <Post key={item.id} post={item} />
   );
 
   const renderError = () => (
-    <View className="p-4 bg-yellow-50 dark:bg-yellow-900 mx-4 rounded-xl mb-4 flex-row items-center">
-      <View className="flex-1">
-        <Text className="text-yellow-800 dark:text-yellow-300">{error}</Text>
-      </View>
-      <TouchableOpacity
-        onPress={handleRetry}
-        className="ml-2 bg-yellow-200 dark:bg-yellow-800 px-3 py-1 rounded-md"
-      >
-        <View className="flex-row items-center">
-          <Feather
-            name="refresh-cw"
-            size={16}
-            color="#92400e"
-            style={{ marginRight: 8 }}
-          />
-          <Text className="text-yellow-800 dark:text-yellow-300">Retry</Text>
+    <View className="mx-4 mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+      <View className="flex-row items-start">
+        <MaterialIcons name="warning" size={20} color="#F59E0B" />
+        <View className="flex-1 ml-3">
+          <Text className="text-yellow-800 dark:text-yellow-200 font-medium">
+            Connection Issue
+          </Text>
+          <Text className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">
+            {error}
+          </Text>
         </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleRetry}
+          className="bg-yellow-100 dark:bg-yellow-800/50 px-3 py-2 rounded-lg"
+        >
+          <View className="flex-row items-center">
+            <MaterialIcons name="refresh" size={16} color="#D97706" />
+            <Text className="text-yellow-800 dark:text-yellow-200 text-sm ml-1 font-medium">
+              Retry
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   const renderEmptyState = () => {
     let message = "No posts available in your feed.";
+    let actionText = "Refresh Feed";
+    let icon = "post-add";
 
-    if (activeTab === "following" && notFollowingAnyone) {
-      message = "Follow a user or join a community to see posts here";
+    // Show login message for protected tabs when not authenticated
+    if (!token && (activeTab === "following" || activeTab === "communities")) {
+      message = "Please log in to view this content";
+      actionText = "Login Required";
+      icon = "login";
+    } else if (activeTab === "following" && notFollowingAnyone) {
+      message = "Follow users or join communities to see posts here";
+      actionText = "Explore";
+      icon = "explore";
     } else if (activeTab === "communities" && noJoinedCommunities) {
-      message = "Join a community to see posts here";
+      message = "Join communities to see posts here";
+      actionText = "Browse Communities";
+      icon = "group-add";
     }
 
     return (
-      <View className="p-6 bg-gray-50 dark:bg-gray-900 rounded-xl mx-4 my-8 items-center">
-        <Text className="text-gray-500 dark:text-gray-400 mb-4 text-center">
+      <View className="mx-4 my-8 bg-white dark:bg-gray-900 rounded-2xl p-8 items-center shadow-sm border border-gray-200 dark:border-gray-700">
+        <View className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full items-center justify-center mb-4">
+          <MaterialIcons name={icon as any} size={32} color="#6B7280" />
+        </View>
+
+        <Text className="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
+          {!token && (activeTab === "following" || activeTab === "communities")
+            ? "Login Required"
+            : "No Posts Yet"}
+        </Text>
+
+        <Text className="text-gray-500 dark:text-gray-400 mb-6 text-center leading-relaxed">
           {message}
         </Text>
-        <TouchableOpacity
-          onPress={handleRetry}
-          className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 px-6 py-2 rounded-md flex-row items-center"
-        >
-          <Feather
-            name="refresh-cw"
-            size={16}
-            color="gray"
-            style={{ marginRight: 8 }}
-          />
-          <Text className="text-gray-700 dark:text-gray-300">Refresh Feed</Text>
-        </TouchableOpacity>
+
+        {/* Only show retry button if authenticated or if not on protected tabs */}
+        {(token ||
+          (activeTab !== "following" && activeTab !== "communities")) && (
+          <TouchableOpacity
+            onPress={handleRetry}
+            className="bg-blue-500 dark:bg-blue-600 px-6 py-3 rounded-xl flex-row items-center shadow-sm"
+          >
+            <MaterialIcons name="refresh" size={20} color="white" />
+            <Text className="text-white font-medium ml-2">{actionText}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
+  const renderLoadingState = () => (
+    <View className="mx-4 my-8 items-center">
+      <View className="bg-white dark:bg-gray-900 rounded-2xl p-8 items-center shadow-sm border border-gray-200 dark:border-gray-700">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="mt-4 text-gray-500 dark:text-gray-400 font-medium">
+          Loading posts...
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Error message at the top */}
       {error && renderError()}
 
       {loading && !refreshing ? (
-        <View className="my-6 items-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="mt-2 text-gray-500 dark:text-gray-400">
-            Loading posts...
-          </Text>
-        </View>
+        renderLoadingState()
       ) : (
         <FlatList
           data={postData}
@@ -206,14 +226,21 @@ const PostList: React.FC<PostListProps> = ({ activeTab }) => {
               refreshing={refreshing}
               onRefresh={handleRefresh}
               colors={["#3B82F6"]}
+              tintColor="#3B82F6"
             />
           }
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            padding: 16,
+            paddingTop: 8,
             paddingBottom: 100, // Add bottom padding for navigation
           }}
-          ItemSeparatorComponent={() => <View className="h-4" />}
+          ItemSeparatorComponent={() => <View className="h-2" />}
+          // Performance optimizations
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={5}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={5}
+          windowSize={10}
         />
       )}
     </View>

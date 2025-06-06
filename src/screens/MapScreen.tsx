@@ -1,139 +1,70 @@
 // src/screens/MapScreen.tsx
-import React, { useState, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
-import { WebView } from 'react-native-webview';
+import React, { useState, useCallback, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Politician } from "@/types/politician";
 import { getAllRelevantPoliticians } from "@/api/politicians";
 import PoliticianCard from "@/components/politicians/PoliticianCard";
+import ElectionMap from "@/components/map/ElectionMap";
 
 const MapScreen = () => {
   const [selectedCounty, setSelectedCounty] = useState<string>("");
   const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedFips, setSelectedFips] = useState<string>("");
   const [politicians, setPoliticians] = useState<Politician[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
 
   // Function to fetch politicians data
-  const fetchPoliticians = useCallback(async (county: string, state: string) => {
-    if (!county || !state) return;
+  const fetchPoliticians = useCallback(
+    async (county: string, state: string) => {
+      if (!county || !state) return;
 
-    setIsLoading(true);
-    setError(null);
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      console.log(`Fetching politicians for ${county}, ${state}`);
-      const relevantPoliticians = await getAllRelevantPoliticians(county, state);
-      setPoliticians(relevantPoliticians);
-    } catch (err) {
-      console.error("Error fetching politicians:", err);
-      setError("Failed to load politicians data. Please try again later.");
-      setPoliticians([]);
-    } finally {
-      setIsLoading(false);
-    }
+      try {
+        console.log(`Fetching politicians for ${county}, ${state}`);
+        const relevantPoliticians = await getAllRelevantPoliticians(
+          county,
+          state
+        );
+        setPoliticians(relevantPoliticians);
+      } catch (err) {
+        console.error("Error fetching politicians:", err);
+        setError("Failed to load politicians data. Please try again later.");
+        setPoliticians([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // Handle county selection from ElectionMap
+  const handleCountySelected = useCallback(
+    (county: string, state: string, fips: string) => {
+      console.log(`County selected: ${county}, ${state}, FIPS: ${fips}`);
+      setSelectedCounty(county);
+      setSelectedState(state);
+      setSelectedFips(fips);
+    },
+    []
+  );
+
+  // Track when map component mounts
+  const handleMapComponentReady = useCallback(() => {
+    console.log("📊 ElectionMap component is ready and visible");
+    setMapLoaded(true);
   }, []);
 
-  // Handle county selection from WebView
-  const handleMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === 'countySelected') {
-        setSelectedCounty(data.county);
-        setSelectedState(data.state);
-        fetchPoliticians(data.county, data.state);
-      }
-    } catch (error) {
-      console.error('Error parsing WebView message:', error);
+  // Fetch politicians when county/state selection changes
+  useEffect(() => {
+    if (selectedCounty && selectedState) {
+      fetchPoliticians(selectedCounty, selectedState);
     }
-  };
-
-  // HTML content for the map WebView
-  const mapHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>US Map</title>
-        <script src="https://d3js.org/d3.v5.min.js"></script>
-        <script src="https://d3js.org/topojson.v1.min.js"></script>
-        <style>
-            body { margin: 0; padding: 0; background: #f5f5f5; }
-            .county { stroke: #fff; stroke-width: 0.5px; cursor: pointer; }
-            .county:hover { stroke: #000; stroke-width: 1px; }
-            .selected { fill: #3b82f6 !important; }
-            #map { width: 100%; height: 100vh; }
-        </style>
-    </head>
-    <body>
-        <div id="map"></div>
-        <script>
-            // You would need to implement a proper D3.js map here
-            // This is a simplified placeholder
-            const width = window.innerWidth;
-            const height = window.innerHeight;
-            
-            const svg = d3.select("#map")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height);
-            
-            // Add click handler for counties
-            svg.on("click", function() {
-                // Mock data - in real implementation, you'd use actual county data
-                const mockCounty = "Example County";
-                const mockState = "Example State";
-                
-                window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: 'countySelected',
-                    county: mockCounty,
-                    state: mockState
-                }));
-            });
-            
-            // Add some mock counties as circles for demonstration
-            const counties = [
-                {name: "Los Angeles County", state: "California", x: 100, y: 200},
-                {name: "Cook County", state: "Illinois", x: 300, y: 150},
-                {name: "Harris County", state: "Texas", x: 250, y: 300}
-            ];
-            
-            svg.selectAll(".county")
-                .data(counties)
-                .enter()
-                .append("circle")
-                .attr("class", "county")
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y)
-                .attr("r", 20)
-                .attr("fill", "#e5e7eb")
-                .on("click", function(d) {
-                    svg.selectAll(".county").classed("selected", false);
-                    d3.select(this).classed("selected", true);
-                    
-                    window.ReactNativeWebView.postMessage(JSON.stringify({
-                        type: 'countySelected',
-                        county: d.name,
-                        state: d.state
-                    }));
-                });
-            
-            // Add labels
-            svg.selectAll(".label")
-                .data(counties)
-                .enter()
-                .append("text")
-                .attr("x", d => d.x)
-                .attr("y", d => d.y - 25)
-                .attr("text-anchor", "middle")
-                .style("font-size", "12px")
-                .style("font-family", "Arial")
-                .text(d => d.name);
-        </script>
-    </body>
-    </html>
-  `;
+  }, [selectedCounty, selectedState, fetchPoliticians]);
 
   // Retry handler
   const handleRetry = useCallback(() => {
@@ -142,16 +73,32 @@ const MapScreen = () => {
     }
   }, [selectedCounty, selectedState, fetchPoliticians]);
 
+  console.log(
+    "🔍 MapScreen render - mapLoaded:",
+    mapLoaded,
+    "selectedCounty:",
+    selectedCounty
+  );
+
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <View className="bg-white dark:bg-gray-800 pt-12 pb-4 px-4 border-b border-gray-200 dark:border-gray-700">
         <Text className="text-2xl font-bold text-gray-900 dark:text-white text-center">
           Political Representatives
         </Text>
         <Text className="text-gray-600 dark:text-gray-400 text-center mt-1">
-          Tap on any county to view local and state representatives
+          Select any county to view local and state representatives
         </Text>
+
+        {/* Debug Status */}
+        <View className="mt-2 p-2 bg-blue-50 dark:bg-blue-900 rounded">
+          <Text className="text-xs text-blue-800 dark:text-blue-300 text-center">
+            🔍 Debug: Map loaded: {mapLoaded ? "✅ Yes" : "⏳ Loading..."} |
+            Selected: {selectedCounty || "None"} | Data:{" "}
+            {selectedCounty ? "✅ Ready" : "⏳ Waiting"}
+          </Text>
+        </View>
       </View>
 
       {/* Network error alert */}
@@ -164,44 +111,68 @@ const MapScreen = () => {
             </Text>
           </View>
           <Text className="text-red-600 dark:text-red-300 mt-1">{error}</Text>
+          <TouchableOpacity
+            onPress={handleRetry}
+            className="mt-2 bg-red-600 px-3 py-2 rounded-md"
+          >
+            <Text className="text-white text-sm font-medium">Retry</Text>
+          </TouchableOpacity>
         </View>
       )}
 
       <View className="flex-1">
-        {/* Map Container */}
-        <View className="flex-2 bg-white dark:bg-gray-900 m-4 rounded-lg overflow-hidden">
-          <WebView
-            source={{ html: mapHTML }}
-            onMessage={handleMessage}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            renderLoading={() => (
-              <View className="flex-1 items-center justify-center">
-                <ActivityIndicator size="large" color="#3B82F6" />
-                <Text className="mt-2 text-gray-500">Loading map...</Text>
-              </View>
-            )}
-          />
+        {/* Map Container - Takes up more space */}
+        <View className="flex-1 bg-white dark:bg-gray-900 m-4 rounded-lg overflow-hidden shadow-sm">
+          <ElectionMap onCountySelected={handleCountySelected} />
         </View>
 
-        {/* Politicians List */}
-        <View className="flex-1 bg-white dark:bg-gray-900 mx-4 mb-4 rounded-lg">
+        {/* Politicians List - Collapsible bottom section */}
+        <View className="h-80 bg-white dark:bg-gray-900 mx-4 mb-4 rounded-lg shadow-sm">
           <View className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <Text className="text-lg font-semibold text-gray-900 dark:text-white">
-              Representatives
-            </Text>
-            {selectedCounty && selectedState && (
-              <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {selectedCounty}, {selectedState}
-              </Text>
-            )}
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Representatives
+                </Text>
+                {selectedCounty && selectedState ? (
+                  <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {selectedCounty}, {selectedState}
+                    {selectedFips && (
+                      <Text className="text-xs text-gray-500">
+                        {" "}
+                        • FIPS: {selectedFips}
+                      </Text>
+                    )}
+                  </Text>
+                ) : (
+                  <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Select a county above to view representatives
+                  </Text>
+                )}
+              </View>
+
+              {/* Count indicator */}
+              {politicians.length > 0 && (
+                <View className="bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
+                  <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium">
+                    {politicians.length}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
-          <ScrollView className="flex-1 p-4">
+          <ScrollView
+            className="flex-1 p-4"
+            showsVerticalScrollIndicator={false}
+          >
             {isLoading ? (
               <View className="flex-1 items-center justify-center py-8">
-                <ActivityIndicator size="large" color="#3B82F6" />
+                <MaterialIcons
+                  name="hourglass-empty"
+                  size={48}
+                  color="#3B82F6"
+                />
                 <Text className="mt-2 text-gray-500 dark:text-gray-400">
                   Loading politicians...
                 </Text>
@@ -218,23 +189,39 @@ const MapScreen = () => {
                 </TouchableOpacity>
               </View>
             ) : politicians.length > 0 ? (
-              politicians.map((politician) => (
-                <View key={politician.id} className="mb-4">
-                  <PoliticianCard politician={politician} />
+              <>
+                {politicians.map((politician, index) => (
+                  <View key={politician.id || index} className="mb-4">
+                    <PoliticianCard politician={politician} />
+                  </View>
+                ))}
+
+                {/* End indicator */}
+                <View className="items-center py-4">
+                  <Text className="text-xs text-gray-400 dark:text-gray-600">
+                    End of representatives list
+                  </Text>
                 </View>
-              ))
+              </>
             ) : selectedCounty ? (
               <View className="flex-1 items-center justify-center py-8">
                 <MaterialIcons name="how-to-vote" size={48} color="#6B7280" />
                 <Text className="text-gray-500 dark:text-gray-400 text-center mt-2">
-                  No representatives found for this area
+                  No representatives found for {selectedCounty}, {selectedState}
+                </Text>
+                <Text className="text-xs text-gray-400 dark:text-gray-600 text-center mt-2">
+                  This area may not have complete data available
                 </Text>
               </View>
             ) : (
               <View className="flex-1 items-center justify-center py-8">
-                <MaterialIcons name="map" size={48} color="#6B7280" />
+                <MaterialIcons name="touch-app" size={48} color="#6B7280" />
                 <Text className="text-gray-500 dark:text-gray-400 text-center">
-                  Select a county on the map to view representatives
+                  Browse counties in the map above
+                </Text>
+                <Text className="text-xs text-gray-400 dark:text-gray-600 text-center mt-2">
+                  Your election data is loaded! Search, filter, or select any
+                  county to see representatives
                 </Text>
               </View>
             )}

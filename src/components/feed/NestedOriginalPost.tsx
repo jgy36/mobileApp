@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { PostType } from "@/types/post";
 import { getPostById } from "@/api/posts";
-import { Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import AuthorAvatar from "@/components/shared/AuthorAvatar";
 import { apiClient } from "@/api/apiClient";
@@ -16,14 +16,21 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
   const [originalPost, setOriginalPost] = useState<PostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const navigation = useNavigation<any>(); // Fix navigation typing
+  // Use navigation hook with error handling
+  let navigation: any = null;
+  try {
+    navigation = useNavigation<any>();
+  } catch (error) {
+    console.warn(
+      "Navigation context not available in NestedOriginalPost component"
+    );
+  }
 
   // Direct API fetch function with improved error handling
   const directFetchPost = async (id: number): Promise<PostType | null> => {
     try {
       console.log(`NestedOriginalPost - Direct API call to fetch post ${id}`);
 
-      // Make sure we add a cache-busting parameter to avoid cached responses
       const timestamp = new Date().getTime();
       const response = await apiClient.get(`/posts/${id}?t=${timestamp}`, {
         headers: {
@@ -34,7 +41,6 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
 
       console.log("NestedOriginalPost - Direct API response:", response.data);
 
-      // Validate the response data
       if (!response.data || !response.data.id) {
         console.error(
           "NestedOriginalPost - Invalid response data:",
@@ -43,7 +49,6 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
         return null;
       }
 
-      // Ensure proper type structure
       const postData: PostType = {
         ...response.data,
         commentsCount: response.data.commentsCount || 0,
@@ -58,12 +63,10 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
   };
 
   useEffect(() => {
-    // Log when the component mounts with the postId
     console.log(
       `NestedOriginalPost - Component mounted with postId: ${postId}, type: ${typeof postId}`
     );
 
-    // Validate postId - enhanced validation logic
     if (!postId || isNaN(Number(postId)) || postId <= 0) {
       console.error(`NestedOriginalPost - Invalid postId: ${postId}`);
       setError(`Invalid post ID: ${postId}`);
@@ -79,11 +82,9 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
       setError(null);
 
       try {
-        // Try standard API call first with more detailed logging
         console.log("NestedOriginalPost - Attempting standard API call");
         let rawPost = await getPostById(Number(postId));
 
-        // Convert to PostType if we got data
         let post: PostType | null = null;
         if (rawPost) {
           post = {
@@ -96,7 +97,6 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
           } as PostType;
         }
 
-        // If that fails, try direct API call as fallback
         if (!post) {
           console.log(
             "NestedOriginalPost - Standard API call failed, trying direct fetch"
@@ -138,7 +138,7 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
   // Display loading state
   if (loading) {
     return (
-      <View className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900">
+      <View className="border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 mt-3">
         <View className="flex-row space-x-3">
           <View className="rounded-full bg-gray-300 dark:bg-gray-600 h-8 w-8" />
           <View className="flex-1 space-y-2">
@@ -146,7 +146,9 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
             <View className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
           </View>
         </View>
-        <ActivityIndicator size="small" color="gray" style={{ marginTop: 8 }} />
+        <View className="items-center mt-3">
+          <ActivityIndicator size="small" color="#6B7280" />
+        </View>
       </View>
     );
   }
@@ -154,10 +156,13 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
   // Display error state
   if (error || !originalPost) {
     return (
-      <View className="p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900">
-        <Text className="text-sm text-gray-500 dark:text-gray-400">
-          {error || "The original post could not be loaded"}
-        </Text>
+      <View className="border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 mt-3">
+        <View className="flex-row items-center">
+          <MaterialIcons name="error-outline" size={20} color="#EF4444" />
+          <Text className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+            {error || "The original post could not be loaded"}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -181,44 +186,68 @@ const NestedOriginalPost: React.FC<NestedOriginalPostProps> = ({ postId }) => {
       : "";
 
   const handleAuthorPress = () => {
-    navigation.navigate("Profile", { username: authorName });
+    if (navigation) {
+      navigation.navigate("Profile", { username: authorName });
+    }
   };
 
   const handlePostPress = () => {
-    navigation.navigate("PostDetail", { postId: originalPost.id });
+    if (navigation) {
+      navigation.navigate("PostDetail", { postId: originalPost.id });
+    }
   };
 
-  // Finally, render the original post in nested format
   return (
     <TouchableOpacity
       onPress={handlePostPress}
-      className="border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-900 p-3 mt-2"
+      className="border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800/50 p-4 mt-3 shadow-sm"
       activeOpacity={0.7}
+      disabled={!navigation}
     >
-      <View className="flex-row items-center gap-2 mb-2">
-        <TouchableOpacity onPress={handleAuthorPress}>
-          <AuthorAvatar username={authorName} size={20} />
+      {/* Original post header */}
+      <View className="flex-row items-center mb-3">
+        <TouchableOpacity onPress={handleAuthorPress} disabled={!navigation}>
+          <AuthorAvatar username={authorName} size={24} />
         </TouchableOpacity>
-        <TouchableOpacity onPress={handleAuthorPress}>
+        <TouchableOpacity
+          onPress={handleAuthorPress}
+          className="ml-2"
+          disabled={!navigation}
+        >
           <Text className="font-medium text-gray-900 dark:text-white">
             @{authorName}
           </Text>
         </TouchableOpacity>
+        <View className="ml-2 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-full">
+          <Text className="text-xs font-medium text-blue-600 dark:text-blue-400">
+            Original
+          </Text>
+        </View>
       </View>
-      <Text className="text-gray-900 dark:text-white">{postContent}</Text>
 
-      {/* Simplified stats from original post */}
-      <View className="flex-row items-center gap-4 mt-2">
-        <View className="flex-row items-center gap-1">
-          <Feather name="heart" size={12} color="gray" />
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
+      {/* Original post content */}
+      <Text className="text-gray-900 dark:text-white leading-relaxed mb-3">
+        {postContent}
+      </Text>
+
+      {/* Stats from original post */}
+      <View className="flex-row items-center gap-4">
+        <View className="flex-row items-center">
+          <MaterialIcons name="favorite-border" size={14} color="#6B7280" />
+          <Text className="ml-1 text-xs text-gray-500 dark:text-gray-400">
             {originalPost.likes || 0}
           </Text>
         </View>
-        <View className="flex-row items-center gap-1">
-          <Feather name="message-circle" size={12} color="gray" />
-          <Text className="text-xs text-gray-500 dark:text-gray-400">
+        <View className="flex-row items-center">
+          <MaterialIcons name="chat-bubble-outline" size={14} color="#6B7280" />
+          <Text className="ml-1 text-xs text-gray-500 dark:text-gray-400">
             {originalPost.commentsCount || 0}
+          </Text>
+        </View>
+        <View className="flex-row items-center">
+          <MaterialIcons name="schedule" size={14} color="#6B7280" />
+          <Text className="ml-1 text-xs text-gray-500 dark:text-gray-400">
+            {new Date(originalPost.createdAt).toLocaleDateString()}
           </Text>
         </View>
       </View>

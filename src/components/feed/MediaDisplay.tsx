@@ -58,7 +58,7 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
   return (
     <View className="mt-3">
       {/* Main media display */}
-      <View className="rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 mb-2">
+      <View className="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 mb-3 shadow-sm">
         {selectedMedia.mediaType === "image" ||
         selectedMedia.mediaType === "gif" ? (
           <TouchableOpacity activeOpacity={0.9}>
@@ -93,35 +93,53 @@ const MediaDisplay: React.FC<MediaDisplayProps> = ({ media }) => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingHorizontal: 4 }}
+          className="mb-2"
+          contentContainerStyle={{ paddingHorizontal: 2 }}
         >
-          {media.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => setSelectedMediaIndex(index)}
-              className={`w-16 h-16 rounded-md overflow-hidden ${
-                index === selectedMediaIndex ? "ring-2 ring-blue-500" : ""
-              }`}
-              style={{
-                borderWidth: index === selectedMediaIndex ? 2 : 0,
-                borderColor:
-                  index === selectedMediaIndex ? "#3B82F6" : "transparent",
-              }}
-            >
-              {item.mediaType === "image" || item.mediaType === "gif" ? (
-                <Image
-                  source={{ uri: getFullUrl(item.thumbnailUrl || item.url) }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              ) : item.mediaType === "video" ? (
-                <View className="w-full h-full bg-black items-center justify-center">
-                  <MaterialIcons name="movie" size={24} color="white" />
-                </View>
-              ) : null}
-            </TouchableOpacity>
-          ))}
+          <View className="flex-row gap-2">
+            {media.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => setSelectedMediaIndex(index)}
+                className={`w-16 h-16 rounded-lg overflow-hidden ${
+                  index === selectedMediaIndex
+                    ? "ring-2 ring-blue-500 border-2 border-blue-500"
+                    : "border border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                {item.mediaType === "image" || item.mediaType === "gif" ? (
+                  <Image
+                    source={{ uri: getFullUrl(item.thumbnailUrl || item.url) }}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
+                ) : item.mediaType === "video" ? (
+                  <View className="w-full h-full bg-black items-center justify-center">
+                    <MaterialIcons name="play-arrow" size={24} color="white" />
+                  </View>
+                ) : null}
+
+                {/* Selection indicator */}
+                {index === selectedMediaIndex && (
+                  <View className="absolute top-1 right-1 bg-blue-500 rounded-full w-4 h-4 items-center justify-center">
+                    <MaterialIcons name="check" size={12} color="white" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
         </ScrollView>
+      )}
+
+      {/* Media counter for multiple items */}
+      {media.length > 1 && (
+        <View className="flex-row justify-center mt-2">
+          <View className="bg-black/70 px-3 py-1 rounded-full">
+            <Text className="text-white text-xs font-medium">
+              {selectedMediaIndex + 1} of {media.length}
+            </Text>
+          </View>
+        </View>
       )}
     </View>
   );

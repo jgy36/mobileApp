@@ -1,4 +1,4 @@
-// App.tsx - Full navigation with bottom tabs with advanced debugging
+// App.tsx - Full navigation with bottom tabs
 import "./global.css";
 import { injectStore } from "./src/api/apiClient";
 import React, { useEffect, useState } from "react";
@@ -11,9 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import { MaterialIcons } from "@expo/vector-icons";
 import { LogBox, View, Text, ActivityIndicator, Button } from "react-native";
 import { store, persistor } from "./src/redux/store";
-import { apiClient } from "./src/api/apiClient";
 import { getToken } from "./src/utils/tokenUtils";
-import * as Network from "expo-network"; // Add this import at the top with other imports
 
 // Hide known warnings
 LogBox.ignoreLogs([
@@ -24,16 +22,6 @@ LogBox.ignoreLogs([
 
 // Initialize apiClient with store
 injectStore(store);
-
-// Enhanced console logging
-const originalConsoleLog = console.log;
-const originalConsoleError = console.error;
-console.log = function (...args) {
-  originalConsoleLog("[APP LOG]", ...args);
-};
-console.error = function (...args) {
-  originalConsoleError("[APP ERROR]", ...args);
-};
 
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./src/redux/store";
@@ -104,8 +92,6 @@ const ErrorScreen = ({
 
 // Bottom Tab Navigator for main screens
 function MainTabNavigator() {
-  console.log("Rendering MainTabNavigator");
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -117,7 +103,7 @@ function MainTabNavigator() {
               iconName = "home";
               break;
             case "Communities":
-              iconName = "group"; // Changed from "groups" to "group"
+              iconName = "group";
               break;
             case "Map":
               iconName = "map";
@@ -148,25 +134,19 @@ function MainTabNavigator() {
   );
 }
 
-// Simplified AuthPersistence component for debugging
+// AuthPersistence component
 function AuthPersistence({ children }: { children: React.ReactNode }) {
-  console.log("Rendering AuthPersistence");
   const dispatch = useDispatch<AppDispatch>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("AuthPersistence useEffect running");
-
     const initializeApp = async () => {
       try {
-        console.log("Starting auth state restoration...");
-
         // Check if we have a token first
         const token = await getToken();
 
         if (!token) {
-          console.log("No token found, skipping auth check");
           // Don't attempt to restore auth state if no token exists
           await dispatch({
             type: "user/restoreAuthState/fulfilled",
@@ -188,27 +168,16 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
 
         // Only try to restore state if we already have a token
         await dispatch(restoreAuthState()).unwrap();
-        console.log("Auth state restored successfully", {
-          isAuthenticated: store.getState().user.isAuthenticated,
-          reduxState:
-            JSON.stringify(store.getState().user).substring(0, 100) + "...",
-        });
 
         // Initialize badges if authenticated
         if (store.getState().user.isAuthenticated) {
-          console.log("Initializing badges...");
           dispatch(initializeBadges());
         }
       } catch (error) {
-        console.error(
-          "Error initializing app:",
-          error instanceof Error ? error.message : "Unknown error",
-          error
-        );
+        console.error("Error initializing app:", error);
 
         // Don't set error state for auth failures - just set not authenticated
         if (error instanceof Error && error.toString().includes("401")) {
-          console.log("Auth check failed with 401 - setting not authenticated");
           await dispatch({
             type: "user/restoreAuthState/fulfilled",
             payload: {
@@ -231,7 +200,6 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
           );
         }
       } finally {
-        console.log("Initialization complete, setting isLoading to false");
         setIsLoading(false);
       }
     };
@@ -240,7 +208,6 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
   }, [dispatch]);
 
   if (isLoading) {
-    console.log("AuthPersistence is loading...");
     return (
       <View
         style={{
@@ -250,7 +217,7 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
           backgroundColor: "#ffffff",
         }}
       >
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color="#3B82F6" />
         <Text style={{ marginTop: 16, color: "#666666" }}>
           Loading app state...
         </Text>
@@ -259,7 +226,6 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
   }
 
   if (error) {
-    console.log("AuthPersistence encountered an error:", error);
     return (
       <View
         style={{
@@ -292,16 +258,13 @@ function AuthPersistence({ children }: { children: React.ReactNode }) {
     );
   }
 
-  console.log("AuthPersistence rendering children");
   return <>{children}</>;
 }
 
 function AppNavigator() {
-  console.log("Rendering AppNavigator");
-  const isAuthenticated = useSelector((state: RootState) => {
-    console.log("Auth state in AppNavigator:", state.user.isAuthenticated);
-    return state.user.isAuthenticated;
-  });
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.user.isAuthenticated
+  );
 
   return (
     <NavigationContainer>
@@ -360,116 +323,10 @@ function AppNavigator() {
   );
 }
 
-// Main App component with error handling and emergency debug render
-// App.tsx - FIXED VERSION
-// Then in your App component:
+// Main App component
 export default function App() {
-  console.log("=== APP COMPONENT STARTING ===");
   const [hasError, setHasError] = React.useState(false);
   const [error, setError] = React.useState<Error | null>(null);
-  const [appState, setAppState] = React.useState("initializing");
-
-  console.log("=== CURRENT APP STATE:", appState, "===");
-
-  // Simplified initialization to help debug
-  useEffect(() => {
-    console.log("=== APP MOUNTED - useEffect running ===");
-    console.log("App component mounted, setting state to 'mounted'");
-    setAppState("mounted");
-
-    // Simple test to check if basic React functionality works
-    setTimeout(() => {
-      console.log("=== TIMEOUT FIRED - Setting appState to 'ready' ===");
-      setAppState("ready");
-    }, 2000);
-
-    return () => console.log("App component unmounted");
-  }, []);
-
-  // Separate useEffect for network tests to isolate potential issues
-  useEffect(() => {
-    if (appState !== "mounted") return;
-
-    console.log("Starting network tests...");
-    const runNetworkTests = async () => {
-      try {
-        console.log("Checking network state...");
-        const networkState = await Network.getNetworkStateAsync();
-        console.log("Network state:", networkState);
-      } catch (error) {
-        console.error(
-          "Failed to get network state:",
-          error instanceof Error ? error.message : "Unknown error"
-        );
-      }
-    };
-
-    runNetworkTests().catch((err) => {
-      console.error("Uncaught error in network tests:", err);
-    });
-  }, [appState]);
-
-  // Add this to test rendering without Redux
-  // Test component definition
-  const TestComponent = () => (
-    <View>
-      {/* This should work (inline styles) */}
-      <View
-        style={{
-          backgroundColor: "blue",
-          padding: 16,
-          margin: 16,
-          borderRadius: 8,
-        }}
-      >
-        <Text
-          style={{
-            color: "white",
-            fontSize: 20,
-            fontWeight: "bold",
-            textAlign: "center",
-          }}
-        >
-          Inline Style Test - This should be blue with white text
-        </Text>
-      </View>
-
-      {/* This should work if NativeWind is working */}
-      <View className="bg-red-500 p-4 m-4 rounded-lg">
-        <Text className="text-white text-xl font-bold text-center">
-          NativeWind Test - This should be RED with white text
-        </Text>
-      </View>
-    </View>
-  );
-
-  if (appState === "initializing") {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "lightblue",
-        }}
-      >
-        <Text>Initializing app...</Text>
-      </View>
-    );
-  }
-
-  // Remove or comment out this entire section:
-  /*
-if (appState === "mounted") {
-  console.log("=== RENDERING MOUNTED STATE ===");
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "lightgreen" }}>
-      <Text>App mounted, running tests...</Text>
-      <TestComponent />
-    </View>
-  );
-}
-*/
 
   if (hasError && error) {
     return <ErrorScreen error={error} resetError={() => setHasError(false)} />;
@@ -488,18 +345,11 @@ if (appState === "mounted") {
                 backgroundColor: "#fff",
               }}
             >
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator size="large" color="#3B82F6" />
               <Text style={{ marginTop: 16 }}>Loading persisted state...</Text>
             </View>
           }
           persistor={persistor}
-          onBeforeLift={() => {
-            console.log("PersistGate: Before lift");
-            console.log(
-              "Initial Redux State:",
-              JSON.stringify(store.getState().user).substring(0, 100) + "..."
-            );
-          }}
         >
           <StatusBar style="auto" />
           <View style={{ flex: 1, backgroundColor: "white" }}>

@@ -1,6 +1,6 @@
 // src/components/feed/FeedTabs.tsx
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
 
 interface FeedTabsProps {
   activeTab: "for-you" | "following" | "communities";
@@ -15,28 +15,33 @@ const FeedTabs: React.FC<FeedTabsProps> = ({ activeTab, onTabChange }) => {
   ];
 
   return (
-    <View className="flex-row bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      {tabs.map((tab) => (
-        <TouchableOpacity
-          key={tab.id}
-          onPress={() => onTabChange(tab.id as "for-you" | "following" | "communities")}
-          className={`flex-1 items-center justify-center py-4 px-4 ${
-            activeTab === tab.id
-              ? "border-b-2 border-blue-500"
-              : ""
-          }`}
-        >
-          <Text
-            className={`text-sm ${
+    <View className="bg-white dark:bg-gray-800 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+      {/* Tab container with rounded background */}
+      <View className="bg-gray-100 dark:bg-gray-700 rounded-xl p-1 flex-row">
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.id}
+            onPress={() =>
+              onTabChange(tab.id as "for-you" | "following" | "communities")
+            }
+            className={`flex-1 py-3 px-4 rounded-lg ${
               activeTab === tab.id
-                ? "font-bold text-blue-500"
-                : "font-normal text-gray-700 dark:text-gray-300"
+                ? "bg-white dark:bg-gray-800 shadow-sm"
+                : "bg-transparent"
             }`}
           >
-            {tab.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              className={`text-center text-lg font-medium ${
+                activeTab === tab.id
+                  ? "text-gray-900 dark:text-white"
+                  : "text-gray-600 dark:text-gray-400"
+              }`}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };
