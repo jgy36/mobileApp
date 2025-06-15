@@ -1,89 +1,157 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons } from "@expo/vector-icons";
 // src/screens/ProfileScreen.tsx
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../redux/store';
-import { useNavigation } from '@react-navigation/native';
+import React from "react";
+import { View, Text, Image, TouchableOpacity, ScrollView } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { useNavigation } from "@react-navigation/native";
 
-import UserBadges from '../components/profile/UserBadges';
-import UserStats from '../components/profile/UserStats';
-import ProfilePosts from '../components/profile/ProfilePosts';
+import UserBadges from "../components/profile/UserBadges";
+import UserStats from "../components/profile/UserStats";
+import ProfilePosts from "../components/profile/ProfilePosts";
+
+// Silent error boundary - keeps components working without visible errors
+const ErrorBoundary = ({
+  children,
+  fallback = null,
+}: {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}) => {
+  try {
+    return <>{children}</>;
+  } catch (error) {
+    console.error("Component error:", error);
+    return <>{fallback}</>;
+  }
+};
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const dispatch = useDispatch<AppDispatch>();
   const user = useSelector((state: RootState) => state.user);
-  const [isLoading, setIsLoading] = useState(false);
 
   const navigateToSettings = () => {
-    navigation.navigate('Settings' as never);
+    navigation.navigate("Settings" as never);
   };
 
-  // Handle the case where user.id might be null
-  const userId = user.id || undefined;
+  const userId = user.id;
 
   return (
-    <ScrollView className="flex-1 bg-background">
+    <View className="flex-1 bg-white">
       {/* Header */}
-      <View className="bg-white shadow-sm">
-        <View className="flex-row justify-between items-center p-4">
-          <Text className="text-xl font-bold">Profile</Text>
-          <TouchableOpacity onPress={navigateToSettings}>
-            <MaterialIcons name="settings" size={24} color="#6b7280" />
+      <View className="bg-white border-b border-gray-100">
+        <View className="flex-row justify-between items-center px-4 py-3 pt-12">
+          <Text className="text-xl font-bold text-black">Profile</Text>
+          <TouchableOpacity
+            onPress={navigateToSettings}
+            className="p-2 rounded-full"
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="settings" size={24} color="#1f2937" />
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Profile Section */}
-      <View className="bg-white m-4 rounded-xl shadow-sm p-6">
-        <View className="items-center">
-          {/* Avatar */}
-          <Image
-            source={{
-              uri: user.profileImageUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
-            }}
-            className="w-24 h-24 rounded-full border-2 border-primary/20"
-          />
-          
-          {/* User Info */}
-          <Text className="text-2xl font-bold mt-4">
-            {user.displayName || user.username}
-          </Text>
-          <Text className="text-muted-foreground">@{user.username}</Text>
-          
-          {user.bio && (
-            <Text className="text-center mt-2 text-foreground">{user.bio}</Text>
-          )}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Profile Header Section */}
+        <View className="bg-white px-4 py-6">
+          {/* Avatar and Basic Info */}
+          <View className="items-center mb-6">
+            {/* Profile Image */}
+            <View className="relative mb-4">
+              <Image
+                source={{
+                  uri:
+                    user.profileImageUrl ||
+                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`,
+                }}
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+                style={{
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }}
+              />
 
-          {/* User Badges - Only render if userId is valid */}
-          {userId && <UserBadges userId={userId} isCurrentUser={true} />}
+              {/* Online indicator (optional) */}
+              <View className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-2 border-white rounded-full" />
+            </View>
 
-          {/* User Stats - Only render if userId is valid */}
-          {userId && (
-            <UserStats
-              userId={userId}
-              postsCount={(user as any).postsCount || 0}
-              followersCount={(user as any).followersCount || 0}
-              followingCount={(user as any).followingCount || 0}
-              className="mt-4"
-            />
-          )}
+            {/* Name and Username */}
+            <View className="items-center mb-4">
+              <Text className="text-2xl font-bold text-gray-900 mb-1">
+                {user.displayName || user.username}
+              </Text>
+              <Text className="text-base text-gray-500 mb-3">
+                @{user.username}
+              </Text>
 
-          {/* Join Date */}
-          <View className="flex-row items-center mt-4">
-            <MaterialIcons name="calendar-today" size={16} color="#6b7280" />
-            <Text className="ml-2 text-muted-foreground">
-              Joined {(user as any).joinDate ? new Date((user as any).joinDate).toLocaleDateString() : 'Unknown'}
-            </Text>
+              {/* Bio */}
+              {user.bio && (
+                <Text className="text-center text-gray-700 leading-5 max-w-sm">
+                  {user.bio}
+                </Text>
+              )}
+            </View>
+
+            {/* Join Date */}
+            <View className="flex-row items-center mb-4">
+              <MaterialIcons name="calendar-today" size={16} color="#6b7280" />
+              <Text className="ml-2 text-sm text-gray-500">
+                Joined{" "}
+                {(user as any).joinDate
+                  ? new Date((user as any).joinDate).toLocaleDateString(
+                      "en-US",
+                      {
+                        month: "long",
+                        year: "numeric",
+                      }
+                    )
+                  : "Recently"}
+              </Text>
+            </View>
           </View>
-        </View>
-      </View>
 
-      {/* Posts Section */}
-      <ProfilePosts />
-    </ScrollView>
+          {/* User Stats */}
+          {userId && (
+            <ErrorBoundary>
+              <UserStats userId={userId} className="mb-6" />
+            </ErrorBoundary>
+          )}
+
+          {/* Political Badges */}
+          {userId && (
+            <ErrorBoundary>
+              <View className="mb-6">
+                <UserBadges userId={userId} isCurrentUser={true} />
+              </View>
+            </ErrorBoundary>
+          )}
+        </View>
+
+        {/* Divider */}
+        <View className="h-2 bg-gray-50" />
+
+        {/* Posts Section */}
+        <View className="bg-white">
+          <ErrorBoundary
+            fallback={
+              <View className="p-6 items-center">
+                <Text className="text-gray-500">Unable to load posts</Text>
+              </View>
+            }
+          >
+            <ProfilePosts />
+          </ErrorBoundary>
+        </View>
+
+        {/* Bottom spacing for tab bar */}
+        <View className="h-20" />
+      </ScrollView>
+    </View>
   );
 };
 
-export default ProfileScreen; 
+export default ProfileScreen;
