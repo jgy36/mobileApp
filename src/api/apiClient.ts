@@ -19,20 +19,19 @@ export const injectStore = (store: any) => {
 
 // CRITICAL: Update this configuration based on your setup
 const getApiBaseUrl = () => {
-  // FOR TESTING - Replace with your computer's IP address if using physical device
-  const YOUR_COMPUTER_IP = "192.168.156.15"; // <-- CHANGE THIS to your actual IP
+  const YOUR_COMPUTER_IP = "10.0.0.249"; // <-- UPDATE THIS to your current Wi-Fi IP
 
   if (Platform.OS === "android") {
     // Android emulator
     return "http://10.0.2.2:8080/api";
 
-    // Uncomment this line if using a physical Android device:
+    // For physical Android device:
     // return `http://${YOUR_COMPUTER_IP}:8080/api`;
   } else {
-    // iOS simulator
-    return "http://192.168.137.1:8080/api";
+    // iOS simulator - UPDATE THIS
+    return "http://10.0.0.249:8080/api";
 
-    // Uncomment this line if using a physical iOS device:
+    // For physical iOS device:
     // return `http://${YOUR_COMPUTER_IP}:8080/api`;
   }
 };

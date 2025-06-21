@@ -1,4 +1,4 @@
-// src/api/posts.ts - React Native version
+// src/api/posts.ts - React Native version with FIXED FormData construction
 import { apiClient, resilientApiClient, safeApiCall } from "./apiClient";
 import {
   PostResponse,
@@ -100,88 +100,124 @@ export const getPostsByUsername = async (
 };
 
 /**
- * Create a new post - React Native version
+ * Create a new post - React Native version with FIXED FormData
  * Handles both text posts and posts with media
  */
 export const createPost = async (
   postData: CreatePostRequest
 ): Promise<PostResponse> => {
-  console.log("📝 createPost API call with data:", JSON.stringify({
-    ...postData,
-    media: postData.media ? `${postData.media.length} files` : 'none'
-  }, null, 2));
-  
+  console.log(
+    "📝 createPost API call with data:",
+    JSON.stringify(
+      {
+        ...postData,
+        media: postData.media ? `${postData.media.length} files` : "none",
+      },
+      null,
+      2
+    )
+  );
+
   return safeApiCall(async () => {
     // Ensure repost flag is set correctly if we have an originalPostId
     if (postData.originalPostId && postData.repost !== true) {
-      console.warn("⚠️ originalPostId provided but repost flag not set - fixing");
+      console.warn(
+        "⚠️ originalPostId provided but repost flag not set - fixing"
+      );
       postData.repost = true;
     }
-    
+
     let response;
-    
+
     // Check if we have media files
     if (postData.media && postData.media.length > 0) {
-      console.log("📝 Uploading post with media files");
-      // Use FormData for multipart/form-data requests in React Native
+      console.log("📝 Uploading post with media files (React Native FormData)");
+
+      // FIXED: Proper React Native FormData construction to match Spring Boot controller
       const formData = new FormData();
+
+      // CRITICAL: Match Spring Boot @RequestPart and @RequestParam expectations
+
+      // Content as @RequestPart (required by backend)
       formData.append("content", postData.content);
-      
-      // Add other fields if present
-      if (postData.originalPostId) {
-        formData.append("originalPostId", postData.originalPostId.toString());
-      }
-      
-      if (postData.repost) {
-        formData.append("repost", String(postData.repost));
-      }
-      
-      if (postData.communityId) {
-        formData.append("communityId", postData.communityId.toString());
-      }
-      
-      // Add media files - React Native specific handling
+
+      // Media files as @RequestPart
       postData.media.forEach((file, index) => {
-        // In React Native, files are typically objects with uri, type, and name
-        if (typeof file === 'object' && 'uri' in file) {
-          formData.append("media", {
+        // React Native specific file object construction
+        if (typeof file === "object" && "uri" in file) {
+          const mediaFile = {
             uri: file.uri,
-            type: file.type || 'image/jpeg',
+            type: file.type || "image/jpeg",
             name: file.name || `media_${index}.jpg`,
-          } as any);
+          };
+
+          // React Native FormData append for media files
+          formData.append("media", mediaFile as any);
+          console.log(`✅ Added media file ${index}:`, mediaFile.name);
         } else {
-          // Fallback for File objects (if using react-native-fs or similar)
+          // Fallback for File objects
           formData.append("media", file);
         }
       });
-      
-      // Add media types if present
+
+      // CRITICAL: Spring Boot @RequestParam fields - append as regular form fields
+      if (postData.communityId) {
+        formData.append("communityId", postData.communityId.toString());
+        console.log(
+          "✅ Added communityId as @RequestParam:",
+          postData.communityId
+        );
+      }
+
+      if (postData.originalPostId) {
+        formData.append("originalPostId", postData.originalPostId.toString());
+        console.log(
+          "✅ Added originalPostId as @RequestParam:",
+          postData.originalPostId
+        );
+      }
+
+      if (postData.repost) {
+        formData.append("repost", String(postData.repost));
+        console.log("✅ Added repost as @RequestParam:", postData.repost);
+      }
+
+      // Media types and alt texts as @RequestParam arrays
       if (postData.mediaTypes) {
         postData.mediaTypes.forEach((type) => {
           formData.append("mediaTypes", type);
         });
+        console.log("✅ Added mediaTypes:", postData.mediaTypes);
       }
-      
-      // Add alt texts if present
+
       if (postData.altTexts) {
         postData.altTexts.forEach((text) => {
           formData.append("altTexts", text || "");
         });
+        console.log("✅ Added altTexts:", postData.altTexts);
       }
-      
-      response = await apiClient.post<PostResponse>("/posts/with-media", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+
+      console.log(
+        "📤 Sending FormData to /posts/with-media with proper Spring Boot structure"
+      );
+
+      response = await apiClient.post<PostResponse>(
+        "/posts/with-media",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
     } else {
       // Regular JSON request without media
       response = await apiClient.post<PostResponse>("/posts", postData);
     }
-    
+
     // Log the raw response for debugging
     console.log("📝 Response data:", JSON.stringify(response.data, null, 2));
-    
+
     // Initialize an enhanced response that will include fields we need
     const enhancedResponse: PostResponse = {
       ...response.data,
@@ -189,24 +225,29 @@ export const createPost = async (
       repostCount: response.data.repostsCount || response.data.repostCount,
       repostsCount: response.data.repostsCount || response.data.repostCount,
     };
-    
+
     // Make sure repost fields are properly set
     if (postData.repost === true && postData.originalPostId) {
       if (!response.data.isRepost) {
         console.warn("⚠️ API response missing isRepost flag - adding it");
         enhancedResponse.isRepost = true;
       }
-      
+
       if (!response.data.originalPostId) {
         console.warn("⚠️ API response missing originalPostId - adding it");
         enhancedResponse.originalPostId = postData.originalPostId;
       }
-      
+
       // Force another API call to get the original post data if it's missing
-      if (!response.data.originalPostContent && enhancedResponse.originalPostId) {
+      if (
+        !response.data.originalPostContent &&
+        enhancedResponse.originalPostId
+      ) {
         try {
           console.log("🔍 Fetching missing original post data");
-          const originalPost = await getPostById(enhancedResponse.originalPostId);
+          const originalPost = await getPostById(
+            enhancedResponse.originalPostId
+          );
           if (originalPost) {
             enhancedResponse.originalAuthor = originalPost.author;
             enhancedResponse.originalPostContent = originalPost.content;
@@ -217,7 +258,7 @@ export const createPost = async (
         }
       }
     }
-    
+
     return enhancedResponse;
   }, "Creating post");
 };

@@ -1,4 +1,4 @@
-// src/screens/MapScreen.tsx
+// src/screens/MapScreen.tsx - Modern X-style Design
 import React, { useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -73,88 +73,61 @@ const MapScreen = () => {
     }
   }, [selectedCounty, selectedState, fetchPoliticians]);
 
-  console.log(
-    "🔍 MapScreen render - mapLoaded:",
-    mapLoaded,
-    "selectedCounty:",
-    selectedCounty
-  );
-
   return (
-    <View className="flex-1 bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <View className="bg-white dark:bg-gray-800 pt-12 pb-4 px-4 border-b border-gray-200 dark:border-gray-700">
-        <Text className="text-2xl font-bold text-gray-900 dark:text-white text-center">
-          Political Representatives
+    <View className="flex-1 bg-black">
+      {/* Header - X-style minimal */}
+      <View className="bg-black/95 backdrop-blur-md pt-12 pb-4 px-4 border-b border-gray-800">
+        <Text className="text-xl font-bold text-white">Representatives</Text>
+        <Text className="text-gray-400 text-sm mt-1">
+          Select a county to view local representatives
         </Text>
-        <Text className="text-gray-600 dark:text-gray-400 text-center mt-1">
-          Select any county to view local and state representatives
-        </Text>
-
-        {/* Debug Status */}
-        <View className="mt-2 p-2 bg-blue-50 dark:bg-blue-900 rounded">
-          <Text className="text-xs text-blue-800 dark:text-blue-300 text-center">
-            🔍 Debug: Map loaded: {mapLoaded ? "✅ Yes" : "⏳ Loading..."} |
-            Selected: {selectedCounty || "None"} | Data:{" "}
-            {selectedCounty ? "✅ Ready" : "⏳ Waiting"}
-          </Text>
-        </View>
       </View>
 
-      {/* Network error alert */}
+      {/* Error Alert - Compact */}
       {error && (
-        <View className="bg-red-50 dark:bg-red-900 p-4 m-4 rounded-lg">
+        <View className="bg-red-950 border border-red-800 mx-4 mt-3 p-3 rounded-lg">
           <View className="flex-row items-center">
-            <MaterialIcons name="error-outline" size={24} color="#DC2626" />
-            <Text className="ml-2 text-red-800 dark:text-red-200 font-medium">
-              Error
+            <MaterialIcons name="error-outline" size={18} color="#ef4444" />
+            <Text className="ml-2 text-red-400 text-sm font-medium">
+              Error loading data
             </Text>
           </View>
-          <Text className="text-red-600 dark:text-red-300 mt-1">{error}</Text>
-          <TouchableOpacity
-            onPress={handleRetry}
-            className="mt-2 bg-red-600 px-3 py-2 rounded-md"
-          >
-            <Text className="text-white text-sm font-medium">Retry</Text>
+          <TouchableOpacity onPress={handleRetry} className="mt-2">
+            <Text className="text-blue-400 text-sm">Retry</Text>
           </TouchableOpacity>
         </View>
       )}
 
       <View className="flex-1">
-        {/* Map Container - Takes up more space */}
-        <View className="flex-1 bg-white dark:bg-gray-900 m-4 rounded-lg overflow-hidden shadow-sm">
+        {/* Map Container */}
+        <View className="flex-1 m-3 rounded-xl overflow-hidden border border-gray-800">
           <ElectionMap onCountySelected={handleCountySelected} />
         </View>
 
-        {/* Politicians List - Collapsible bottom section */}
-        <View className="h-80 bg-white dark:bg-gray-900 mx-4 mb-4 rounded-lg shadow-sm">
-          <View className="p-4 border-b border-gray-200 dark:border-gray-700">
+        {/* Representatives List - Compact bottom section */}
+        <View className="h-72 bg-gray-950 mx-3 mb-3 rounded-xl border border-gray-800">
+          {/* Header */}
+          <View className="px-4 py-3 border-b border-gray-800">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Text className="text-white text-base font-semibold">
                   Representatives
                 </Text>
                 {selectedCounty && selectedState ? (
-                  <Text className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <Text className="text-gray-400 text-sm mt-0.5">
                     {selectedCounty}, {selectedState}
-                    {selectedFips && (
-                      <Text className="text-xs text-gray-500">
-                        {" "}
-                        • FIPS: {selectedFips}
-                      </Text>
-                    )}
                   </Text>
                 ) : (
-                  <Text className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                    Select a county above to view representatives
+                  <Text className="text-gray-500 text-sm mt-0.5">
+                    Select a county to view representatives
                   </Text>
                 )}
               </View>
 
               {/* Count indicator */}
               {politicians.length > 0 && (
-                <View className="bg-blue-100 dark:bg-blue-900 px-3 py-1 rounded-full">
-                  <Text className="text-blue-800 dark:text-blue-200 text-sm font-medium">
+                <View className="bg-blue-600 px-2 py-1 rounded-full">
+                  <Text className="text-white text-xs font-medium">
                     {politicians.length}
                   </Text>
                 </View>
@@ -162,66 +135,53 @@ const MapScreen = () => {
             </View>
           </View>
 
+          {/* Content */}
           <ScrollView
-            className="flex-1 p-4"
+            className="flex-1 px-4"
             showsVerticalScrollIndicator={false}
           >
             {isLoading ? (
               <View className="flex-1 items-center justify-center py-8">
                 <MaterialIcons
                   name="hourglass-empty"
-                  size={48}
-                  color="#3B82F6"
+                  size={32}
+                  color="#3b82f6"
                 />
-                <Text className="mt-2 text-gray-500 dark:text-gray-400">
-                  Loading politicians...
-                </Text>
+                <Text className="mt-2 text-gray-400 text-sm">Loading...</Text>
               </View>
             ) : error ? (
               <View className="flex-1 items-center justify-center py-8">
-                <MaterialIcons name="error-outline" size={48} color="#EF4444" />
-                <Text className="text-red-500 text-center mt-2">{error}</Text>
+                <MaterialIcons name="error-outline" size={32} color="#ef4444" />
+                <Text className="text-red-400 text-center mt-2 text-sm">
+                  {error}
+                </Text>
                 <TouchableOpacity
                   onPress={handleRetry}
-                  className="bg-red-500 px-4 py-2 rounded-lg mt-4"
+                  className="bg-red-600 px-3 py-2 rounded-lg mt-3"
                 >
-                  <Text className="text-white font-medium">Retry</Text>
+                  <Text className="text-white text-sm font-medium">Retry</Text>
                 </TouchableOpacity>
               </View>
             ) : politicians.length > 0 ? (
               <>
                 {politicians.map((politician, index) => (
-                  <View key={politician.id || index} className="mb-4">
+                  <View key={politician.id || index} className="py-2">
                     <PoliticianCard politician={politician} />
                   </View>
                 ))}
-
-                {/* End indicator */}
-                <View className="items-center py-4">
-                  <Text className="text-xs text-gray-400 dark:text-gray-600">
-                    End of representatives list
-                  </Text>
-                </View>
               </>
             ) : selectedCounty ? (
               <View className="flex-1 items-center justify-center py-8">
-                <MaterialIcons name="how-to-vote" size={48} color="#6B7280" />
-                <Text className="text-gray-500 dark:text-gray-400 text-center mt-2">
-                  No representatives found for {selectedCounty}, {selectedState}
-                </Text>
-                <Text className="text-xs text-gray-400 dark:text-gray-600 text-center mt-2">
-                  This area may not have complete data available
+                <MaterialIcons name="how-to-vote" size={32} color="#6b7280" />
+                <Text className="text-gray-400 text-center mt-2 text-sm">
+                  No representatives found
                 </Text>
               </View>
             ) : (
               <View className="flex-1 items-center justify-center py-8">
-                <MaterialIcons name="touch-app" size={48} color="#6B7280" />
-                <Text className="text-gray-500 dark:text-gray-400 text-center">
-                  Browse counties in the map above
-                </Text>
-                <Text className="text-xs text-gray-400 dark:text-gray-600 text-center mt-2">
-                  Your election data is loaded! Search, filter, or select any
-                  county to see representatives
+                <MaterialIcons name="touch-app" size={32} color="#6b7280" />
+                <Text className="text-gray-400 text-center text-sm">
+                  Select a county on the map above
                 </Text>
               </View>
             )}

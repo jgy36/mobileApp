@@ -1,24 +1,18 @@
 import { MaterialIcons } from "@expo/vector-icons";
-// src/screens/community/CreateCommunityScreen.tsx
+// src/screens/community/CreateCommunityScreen.tsx - Modern X-style Design
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, Alert, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import axios from "axios";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-
-// Add imports for the missing icons
-import { Ionicons } from "@expo/vector-icons";
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_BASE_URL || "http://192.168.137.1:8080/api";
@@ -42,10 +36,9 @@ const CreateCommunityScreen = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [rules, setRules] = useState("");
-  const [color, setColor] = useState("#3b82f6");
+  const [color, setColor] = useState("#1d9bf0");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isCreating, setIsCreating] = useState(false);
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   // Redirect if not authenticated or not an admin
   useEffect(() => {
@@ -69,8 +62,9 @@ const CreateCommunityScreen = () => {
   // If not admin, show loading state until redirect happens
   if (!isAdmin) {
     return (
-      <View className="flex-1 bg-background justify-center items-center">
-        <View className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></View>
+      <View className="flex-1 bg-black justify-center items-center">
+        <MaterialIcons name="hourglass-empty" size={32} color="#71767b" />
+        <Text className="mt-4 text-gray-400 text-sm">Loading...</Text>
       </View>
     );
   }
@@ -167,164 +161,172 @@ const CreateCommunityScreen = () => {
   };
 
   return (
-    <ScrollView className="flex-1 bg-background">
-      <View className="max-w-3xl mx-auto p-6">
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-foreground">
-            Create a Community
-          </Text>
-          <Text className="text-muted-foreground">
-            Create a community to gather people around a shared interest or
-            topic
-          </Text>
-        </View>
+    <View className="flex-1 bg-black">
+      {/* Header - X-style */}
+      <View className="bg-black/95 backdrop-blur-md pt-12 pb-3 px-4 border-b border-gray-800">
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            className="mr-4"
+          >
+            <Text className="text-white text-base">Cancel</Text>
+          </TouchableOpacity>
 
+          <Text className="text-white text-lg font-semibold">
+            Create Community
+          </Text>
+
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={isCreating}
+            className="bg-blue-600 px-4 py-1.5 rounded-full"
+            style={{
+              opacity: isCreating ? 0.7 : 1,
+            }}
+          >
+            <Text className="text-white font-medium text-sm">
+              {isCreating ? "Creating..." : "Create"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+        {/* General error */}
         {errors.general && (
-          <View className="mb-6 p-4 bg-destructive/20 rounded-lg border border-destructive">
-            <Text className="text-destructive font-semibold">Error</Text>
-            <Text className="text-destructive">{errors.general}</Text>
+          <View className="mt-4 p-3 bg-red-950 border border-red-800 rounded-lg">
+            <Text className="text-red-400 text-sm">{errors.general}</Text>
           </View>
         )}
 
-        <Card className="shadow-md">
-          <CardHeader>
-            <Text className="text-lg font-semibold text-foreground">
-              Community Details
+        {/* Form fields */}
+        <View className="py-6 space-y-6">
+          {/* Community ID */}
+          <View>
+            <Text className="text-white text-base font-medium mb-2">
+              Community ID
             </Text>
-            <Text className="text-muted-foreground">
-              Fill out the information below to create your community
+            <TextInput
+              className="bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded-lg text-base"
+              style={{ borderColor: errors.id ? "#ef4444" : "#374151" }}
+              value={id}
+              onChangeText={setId}
+              placeholder="e.g. political-discussion"
+              placeholderTextColor="#71767b"
+              maxLength={30}
+              editable={!isCreating}
+            />
+            {errors.id && (
+              <Text className="text-red-400 text-sm mt-1">{errors.id}</Text>
+            )}
+            <Text className="text-gray-400 text-xs mt-1">
+              This will be used in your community URL
             </Text>
-          </CardHeader>
+          </View>
 
-          <CardContent className="space-y-6">
-            {/* Community ID */}
-            <View className="space-y-2">
-              <Label className="text-base font-medium">Community ID</Label>
-              <Input
-                value={id}
-                onChangeText={setId}
-                placeholder="e.g. political-discussion"
-                maxLength={30}
-                className={errors.id ? "border-destructive" : ""}
-                editable={!isCreating}
+          {/* Community Name */}
+          <View>
+            <Text className="text-white text-base font-medium mb-2">
+              Community Name
+            </Text>
+            <TextInput
+              className="bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded-lg text-base"
+              style={{ borderColor: errors.name ? "#ef4444" : "#374151" }}
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g. Political Discussion"
+              placeholderTextColor="#71767b"
+              maxLength={50}
+              editable={!isCreating}
+            />
+            {errors.name && (
+              <Text className="text-red-400 text-sm mt-1">{errors.name}</Text>
+            )}
+            <Text className="text-gray-400 text-xs mt-1">
+              Display name for your community
+            </Text>
+          </View>
+
+          {/* Community Description */}
+          <View>
+            <Text className="text-white text-base font-medium mb-2">
+              Description
+            </Text>
+            <TextInput
+              className="bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded-lg text-base"
+              style={{
+                borderColor: errors.description ? "#ef4444" : "#374151",
+                height: 100,
+                textAlignVertical: "top",
+              }}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="What is your community about?"
+              placeholderTextColor="#71767b"
+              editable={!isCreating}
+              multiline
+              numberOfLines={4}
+            />
+            {errors.description && (
+              <Text className="text-red-400 text-sm mt-1">
+                {errors.description}
+              </Text>
+            )}
+            <Text className="text-gray-400 text-xs mt-1">
+              Tell people what your community is about
+            </Text>
+          </View>
+
+          {/* Community Rules */}
+          <View>
+            <Text className="text-white text-base font-medium mb-2">
+              Community Rules (Optional)
+            </Text>
+            <TextInput
+              className="bg-gray-900 border border-gray-700 text-white px-4 py-3 rounded-lg text-base"
+              style={{
+                borderColor: errors.rules ? "#ef4444" : "#374151",
+                height: 120,
+                textAlignVertical: "top",
+              }}
+              value={rules}
+              onChangeText={setRules}
+              placeholder="Enter one rule per line"
+              placeholderTextColor="#71767b"
+              editable={!isCreating}
+              multiline
+              numberOfLines={5}
+            />
+            {errors.rules && (
+              <Text className="text-red-400 text-sm mt-1">{errors.rules}</Text>
+            )}
+            <Text className="text-gray-400 text-xs mt-1">
+              Enter one rule per line. You can edit these later.
+            </Text>
+          </View>
+
+          {/* Information note */}
+          <View className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+            <View className="flex-row">
+              <MaterialIcons
+                name="info-outline"
+                size={18}
+                color="#71767b"
+                style={{ marginRight: 8, marginTop: 2 }}
               />
-              {errors.id && (
-                <Text className="text-sm text-destructive">{errors.id}</Text>
-              )}
-              <Text className="text-xs text-muted-foreground">
-                This will be used in your community URL: /community/
-                {id || "example"}
+              <Text className="text-gray-300 text-sm flex-1 leading-5">
+                By creating a community, you agree to moderate it according to
+                platform guidelines. You'll automatically become its first
+                member and moderator.
               </Text>
             </View>
+          </View>
+        </View>
 
-            {/* Community Name */}
-            <View className="space-y-2">
-              <Label className="text-base font-medium">Community Name</Label>
-              <Input
-                value={name}
-                onChangeText={setName}
-                placeholder="e.g. Political Discussion"
-                maxLength={50}
-                className={errors.name ? "border-destructive" : ""}
-                editable={!isCreating}
-              />
-              {errors.name && (
-                <Text className="text-sm text-destructive">{errors.name}</Text>
-              )}
-              <Text className="text-xs text-muted-foreground">
-                Display name for your community
-              </Text>
-            </View>
-
-            {/* Community Description */}
-            <View className="space-y-2">
-              <Label className="text-base font-medium">Description</Label>
-              <Textarea
-                value={description}
-                onChangeText={setDescription}
-                placeholder="What is your community about?"
-                className={errors.description ? "border-destructive" : ""}
-                editable={!isCreating}
-                numberOfLines={4}
-              />
-              {errors.description && (
-                <Text className="text-sm text-destructive">
-                  {errors.description}
-                </Text>
-              )}
-              <Text className="text-xs text-muted-foreground">
-                This will be displayed on your community page
-              </Text>
-            </View>
-
-            {/* Community Rules */}
-            <View className="space-y-2">
-              <Label className="text-base font-medium">
-                Community Rules (Optional)
-              </Label>
-              <Textarea
-                value={rules}
-                onChangeText={setRules}
-                placeholder="Enter one rule per line"
-                className={errors.rules ? "border-destructive" : ""}
-                editable={!isCreating}
-                numberOfLines={5}
-              />
-              {errors.rules && (
-                <Text className="text-sm text-destructive">{errors.rules}</Text>
-              )}
-              <Text className="text-xs text-muted-foreground">
-                Enter one rule per line. You can edit these later.
-              </Text>
-            </View>
-
-            {/* Information note */}
-            <View className="rounded-lg border border-border p-4">
-              <View className="flex-row">
-                <Ionicons
-                  name="information-circle-outline"
-                  size={20}
-                  style={{ marginRight: 8 }}
-                  color="#666"
-                />
-                <Text className="text-sm text-muted-foreground flex-1">
-                  By creating a community, you agree to moderate it according to
-                  platform guidelines. You'll automatically become its first
-                  member and moderator.
-                </Text>
-              </View>
-            </View>
-          </CardContent>
-
-          <CardFooter className="flex-row justify-between">
-            <Button
-              variant="outline"
-              onPress={() => navigation.navigate("Communities")}
-              disabled={isCreating}
-            >
-              <Text>Cancel</Text>
-            </Button>
-            <Button onPress={handleSubmit} disabled={isCreating}>
-              {isCreating ? (
-                <View className="flex-row items-center">
-                  <View className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></View>
-                  <Text>Creating...</Text>
-                </View>
-              ) : (
-                <View className="flex-row items-center">
-                  <Ionicons
-                    name="people"
-                    size={16}
-                    style={{ marginRight: 8 }}
-                  />
-                  <Text>Create Community</Text>
-                </View>
-              )}
-            </Button>
-          </CardFooter>
-        </Card>
-      </View>
-    </ScrollView>
+        {/* Bottom spacing */}
+        <View className="h-20" />
+      </ScrollView>
+    </View>
   );
 };
 

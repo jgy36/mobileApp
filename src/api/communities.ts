@@ -7,8 +7,13 @@ import {
   PostResponse,
   CreatePostRequest,
 } from "./types";
-import { getToken, getUserId, getJoinedCommunities, setJoinedCommunities } from "@/utils/tokenUtils";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getToken,
+  getUserId,
+  getJoinedCommunities,
+  setJoinedCommunities,
+} from "@/utils/tokenUtils";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Helper type guard for error responses
 const isErrorWithResponse = (
@@ -323,7 +328,7 @@ export const toggleCommunityNotifications = async (
     const token = await getToken();
     console.log(`Making notifications toggle request:`);
     console.log(`- Token exists: ${!!token}`);
-    console.log(`- Auth headers: ${token ? 'present' : 'missing'}`);
+    console.log(`- Auth headers: ${token ? "present" : "missing"}`);
 
     // Explicitly add cache prevention
     const timestamp = Date.now();
@@ -351,15 +356,18 @@ export const toggleCommunityNotifications = async (
 
     // Add more detailed logging
     if (response.data.isNotificationsOn !== undefined) {
-      console.log(`Server returned notification state: ${response.data.isNotificationsOn}`);
+      console.log(
+        `Server returned notification state: ${response.data.isNotificationsOn}`
+      );
     } else {
       console.warn("Server did not return isNotificationsOn value!");
     }
 
     // Convert the isNotificationsOn to a proper boolean
-    const notificationsOn = response.data.isNotificationsOn !== undefined
-      ? Boolean(response.data.isNotificationsOn)
-      : undefined;
+    const notificationsOn =
+      response.data.isNotificationsOn !== undefined
+        ? Boolean(response.data.isNotificationsOn)
+        : undefined;
 
     // Return with definite success and the server's reported state
     return {

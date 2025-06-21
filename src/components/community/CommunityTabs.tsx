@@ -39,7 +39,7 @@ const CommunityTabs = ({ posts }: CommunityTabsProps) => {
     const postWithDefaults = {
       ...item,
       isLiked: item.isLiked || false,
-      author: item.author || 'Unknown User',
+      author: item.author || "Unknown User",
       likes: item.likes || 0,
       commentsCount: item.commentsCount || 0,
       createdAt: item.createdAt || new Date().toISOString(),
@@ -58,21 +58,19 @@ const CommunityTabs = ({ posts }: CommunityTabsProps) => {
               key={tab.id}
               onPress={() => setActiveTab(tab.id)}
               className={`flex-1 flex-row items-center justify-center py-4 ${
-                activeTab === tab.id
-                  ? "border-b-2 border-blue-500"
-                  : ""
+                activeTab === tab.id ? "border-b-2 border-blue-500" : ""
               }`}
             >
-              <Ionicons 
-                name={tab.icon as any} 
-                size={16} 
-                color={activeTab === tab.id ? "#3B82F6" : "#6B7280"} 
-                style={{ marginRight: 8 }} 
+              <Ionicons
+                name={tab.icon as any}
+                size={16}
+                color={activeTab === tab.id ? "#3B82F6" : "#6B7280"}
+                style={{ marginRight: 8 }}
               />
-              <Text 
+              <Text
                 className={`font-medium ${
-                  activeTab === tab.id 
-                    ? "text-blue-500" 
+                  activeTab === tab.id
+                    ? "text-blue-500"
                     : "text-gray-700 dark:text-gray-300"
                 }`}
               >
@@ -96,10 +94,12 @@ const CommunityTabs = ({ posts }: CommunityTabsProps) => {
           />
         ) : (
           <EmptyState
-            icon={<Ionicons name="chatbubble-outline" size={48} color="#6B7280" />}
+            icon={
+              <Ionicons name="chatbubble-outline" size={48} color="#6B7280" />
+            }
             title={
-              activeTab === "trending" 
-                ? "No trending posts yet" 
+              activeTab === "trending"
+                ? "No trending posts yet"
                 : activeTab === "hot"
                 ? "No hot posts yet"
                 : "No posts yet"
@@ -127,11 +127,15 @@ interface EmptyStateProps {
   onButtonPress?: () => void;
 }
 
-const EmptyState = ({ icon, title, description, buttonText, onButtonPress }: EmptyStateProps) => (
+const EmptyState = ({
+  icon,
+  title,
+  description,
+  buttonText,
+  onButtonPress,
+}: EmptyStateProps) => (
   <View className="flex-1 items-center justify-center py-8 px-4">
-    <View className="mb-4">
-      {icon}
-    </View>
+    <View className="mb-4">{icon}</View>
     <Text className="text-lg font-medium text-gray-900 dark:text-white mb-1 text-center">
       {title}
     </Text>
@@ -139,7 +143,7 @@ const EmptyState = ({ icon, title, description, buttonText, onButtonPress }: Emp
       {description}
     </Text>
     {buttonText && onButtonPress && (
-      <TouchableOpacity 
+      <TouchableOpacity
         className="mt-4 bg-blue-500 dark:bg-blue-600 px-4 py-2 rounded-md"
         onPress={onButtonPress}
       >

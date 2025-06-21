@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-// src/screens/community/CommunitiesListScreen.tsx
+// src/screens/community/CommunitiesListScreen.tsx - Modern X-style Design
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -197,9 +197,9 @@ const CommunitiesListScreen = () => {
   // Loading state
   if (isLoading) {
     return (
-      <View className="flex-1 bg-background items-center justify-center">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="mt-4 text-gray-500 dark:text-gray-400">
+      <View className="flex-1 bg-black items-center justify-center">
+        <ActivityIndicator size="large" color="#1d9bf0" />
+        <Text className="mt-4 text-gray-400 text-sm">
           Loading communities...
         </Text>
       </View>
@@ -209,19 +209,19 @@ const CommunitiesListScreen = () => {
   // Error state
   if (error) {
     return (
-      <View className="flex-1 bg-background">
+      <View className="flex-1 bg-black">
         <View className="p-6">
-          <View className="bg-white dark:bg-gray-900 p-6 rounded-lg">
-            <MaterialIcons name="error-outline" size={48} color="#EF4444" />
-            <Text className="text-red-500 font-medium text-lg mb-2">Error</Text>
-            <Text className="text-gray-700 dark:text-gray-300 mb-4">
-              {error}
+          <View className="bg-gray-900 border border-gray-700 p-6 rounded-lg">
+            <MaterialIcons name="error-outline" size={32} color="#ef4444" />
+            <Text className="text-red-400 font-medium text-base mb-2">
+              Error
             </Text>
+            <Text className="text-gray-300 mb-4 text-sm">{error}</Text>
             <TouchableOpacity
               onPress={handleRefresh}
-              className="bg-blue-500 px-4 py-2 rounded-lg items-center"
+              className="bg-blue-600 px-4 py-2 rounded-lg items-center"
             >
-              <Text className="text-white font-medium">Retry</Text>
+              <Text className="text-white font-medium text-sm">Retry</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -232,99 +232,83 @@ const CommunitiesListScreen = () => {
   const renderCommunityCard = ({ item: community }: { item: Community }) => (
     <TouchableOpacity
       onPress={() => navigateToCommunity(community.id)}
-      className="mb-4 mx-4"
+      className="border-b border-gray-800 px-4 py-4"
     >
-      <View
-        className="bg-white dark:bg-gray-900 rounded-lg p-6 border-l-4"
-        style={{
-          borderLeftColor: community.color || "#3B82F6",
-        }}
-      >
-        {/* Top row with name and join button */}
-        <View className="flex-row justify-between items-start mb-2">
-          <Text
-            className="text-lg font-medium text-gray-900 dark:text-white flex-1 pr-2"
-            numberOfLines={1}
-          >
-            {community.name}
-          </Text>
-
-          <TouchableOpacity
-            onPress={(e) => {
-              e.stopPropagation();
-              handleJoinCommunity(community.id);
-            }}
-            className={`px-4 py-2 rounded-lg ${
-              community.isJoined
-                ? "bg-gray-200 dark:bg-gray-700"
-                : "bg-blue-500"
-            }`}
-          >
-            <Text
-              className={`font-medium ${
-                community.isJoined
-                  ? "text-gray-700 dark:text-gray-300"
-                  : "text-white"
-              }`}
-            >
-              {community.isJoined ? "Joined" : "Join"}
+      <View className="flex-row justify-between items-start">
+        {/* Left content */}
+        <View className="flex-1 mr-3">
+          <View className="flex-row items-center mb-1">
+            <Text className="text-white font-semibold text-base flex-1">
+              {community.name}
             </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Trending badge */}
-        {community.trending && (
-          <View className="mb-3">
-            <View className="bg-orange-100 dark:bg-orange-900 px-2 py-1 rounded-full flex-row items-center self-start">
-              <MaterialIcons name="trending-up" size={12} color="#F97316" />
-              <Text className="text-orange-800 dark:text-orange-200 text-xs font-medium ml-1">
-                Trending
-              </Text>
-            </View>
+            {/* Trending badge */}
+            {community.trending && (
+              <View className="bg-orange-600 px-2 py-0.5 rounded-full ml-2">
+                <Text className="text-white text-xs font-medium">Trending</Text>
+              </View>
+            )}
           </View>
-        )}
 
-        {/* Description */}
-        <View className="mb-3">
+          {/* Description */}
           <Text
-            className="text-sm text-gray-600 dark:text-gray-400"
+            className="text-gray-300 text-sm mb-2 leading-5"
             numberOfLines={2}
           >
             {community.description}
           </Text>
+
+          {/* Members count */}
+          <View className="flex-row items-center">
+            <MaterialIcons name="group" size={14} color="#71767b" />
+            <Text className="text-gray-400 text-xs ml-1">
+              {community.members.toLocaleString()} members
+            </Text>
+          </View>
         </View>
 
-        {/* Members count */}
-        <View className="flex-row items-center">
-          <MaterialIcons name="group" size={16} color="#6B7280" />
-          <Text className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-            {community.members.toLocaleString()} members
+        {/* Right side - Join button */}
+        <TouchableOpacity
+          onPress={(e) => {
+            e.stopPropagation();
+            handleJoinCommunity(community.id);
+          }}
+          className="border border-gray-600 px-4 py-1.5 rounded-full"
+          style={{
+            backgroundColor: community.isJoined ? "#1d9bf0" : "transparent",
+            borderColor: community.isJoined ? "#1d9bf0" : "#536471",
+          }}
+        >
+          <Text
+            className="font-medium text-sm"
+            style={{
+              color: community.isJoined ? "#ffffff" : "#ffffff",
+            }}
+          >
+            {community.isJoined ? "Joined" : "Join"}
           </Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <View className="flex-1 bg-background">
-      {/* Header */}
-      <View className="bg-white dark:bg-gray-800 pt-12 pb-4 px-4 border-b border-gray-200 dark:border-gray-700">
+    <View className="flex-1 bg-black">
+      {/* Header - X-style */}
+      <View className="bg-black/95 backdrop-blur-md pt-12 pb-4 px-4 border-b border-gray-800">
         <View className="flex-row justify-between items-center">
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-gray-900 dark:text-white">
-              Communities
-            </Text>
-            <Text className="text-gray-600 dark:text-gray-400">
+            <Text className="text-xl font-bold text-white">Communities</Text>
+            <Text className="text-gray-400 text-sm">
               Join discussions with like-minded individuals
             </Text>
           </View>
 
           <TouchableOpacity
             onPress={handleCreateButtonClick}
-            className="bg-blue-500 px-4 py-2 rounded-lg flex-row items-center"
+            className="bg-blue-600 px-4 py-2 rounded-full flex-row items-center"
           >
-            <MaterialIcons name="add" size={20} color="white" />
-            <Text className="text-white font-medium ml-1">Create</Text>
+            <MaterialIcons name="add" size={18} color="white" />
+            <Text className="text-white font-medium ml-1 text-sm">Create</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -338,25 +322,28 @@ const CommunitiesListScreen = () => {
             <RefreshControl
               refreshing={isRefreshing}
               onRefresh={handleRefresh}
+              tintColor="#71767b"
             />
           }
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingVertical: 16 }}
+          contentContainerStyle={{ paddingBottom: 16 }}
         />
       ) : (
         <View className="flex-1 justify-center items-center py-12 px-4">
-          <MaterialIcons name="group" size={64} color="#6B7280" />
-          <Text className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <MaterialIcons name="group" size={48} color="#71767b" />
+          <Text className="text-lg font-medium text-white mb-2">
             No Communities Found
           </Text>
-          <Text className="text-gray-600 dark:text-gray-400 text-center mb-4">
+          <Text className="text-gray-400 text-center mb-4 text-sm">
             There are no communities available
           </Text>
           <TouchableOpacity
             onPress={handleCreateButtonClick}
-            className="bg-blue-500 px-6 py-3 rounded-lg"
+            className="bg-blue-600 px-6 py-3 rounded-full"
           >
-            <Text className="text-white font-medium">Create a Community</Text>
+            <Text className="text-white font-medium text-sm">
+              Create a Community
+            </Text>
           </TouchableOpacity>
         </View>
       )}
